@@ -2006,6 +2006,8 @@
         const imported = JSON.parse(contents);
 
         state.tasks = imported.tasks || [];
+        state.projects = imported.projects || [];
+        state.generalCollapsed = imported.generalCollapsed || {};
         state.lastActiveDate = imported.lastActiveDate || today();
         save(state);
         isDirty = false; // Freshly loaded
@@ -2054,6 +2056,8 @@
         try {
           const imported = JSON.parse(ev.target.result);
           state.tasks = imported.tasks || [];
+          state.projects = imported.projects || [];
+          state.generalCollapsed = imported.generalCollapsed || {};
           state.lastActiveDate = imported.lastActiveDate || today();
           save(state);
           renderAll();
