@@ -469,6 +469,36 @@
       align-items: center;
       gap: 6px;
       padding: 2px 0;
+      transition: background 0.2s;
+    }
+
+    .subtask-row:hover .sub-del-btn {
+      opacity: 1;
+    }
+
+    .sub-del-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 14px;
+      margin-left: auto;
+      opacity: 0;
+      transition: opacity 0.1s;
+      padding: 2px 4px;
+    }
+
+    .sub-del-btn:hover {
+      color: var(--pri-red);
+    }
+
+    .subtask-row.dragging {
+      opacity: 0.5;
+      background: var(--bg);
+    }
+
+    .subtask-row.drag-over {
+      border-top: 1px solid var(--text);
     }
 
     .chk {
@@ -1241,6 +1271,7 @@
     <div class="subtask-row" data-subid="${s.id}">
       <span class="chk ${s.done ? 'checked' : ''}" data-action="toggle-sub" data-tid="${task.id}" data-sid="${s.id}">${s.done ? '●' : '○'}</span>
       <span class="subtask-title ${s.done ? 'struck' : ''}">${esc(s.title)}</span>
+      <button class="sub-del-btn" data-action="delete-sub" data-tid="${task.id}" data-sid="${s.id}" title="Delete subtask">×</button>
     </div>
   `).join('');
 
@@ -1562,6 +1593,14 @@
       renderAll();
     }
 
+    function deleteSubtask(taskId, subId) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      t.subtasks = t.subtasks.filter(s => s.id !== subId);
+      save(state);
+      renderAll();
+    }
+
     let activeSubtaskInput = null;
 
     function showSubtaskInput(taskId, view) {
@@ -1695,6 +1734,12 @@
       else if (action === 'delete') {
         const tid = actionEl.dataset.tid;
         deleteTask(tid);
+      }
+
+      else if (action === 'delete-sub') {
+        const tid = actionEl.dataset.tid;
+        const sid = actionEl.dataset.sid;
+        deleteSubtask(tid, sid);
       }
 
       else if (action === 'undo') {
@@ -1888,14 +1933,17 @@
     // ── Drag and Drop ───────────────────────────────────────────
     let draggedTaskId = null;
     let draggedProjectId = null;
+    let draggedSubId = null;
 
     function attachDragEvents() {
       // Task drag
       document.querySelectorAll('.task').forEach(el => {
         el.draggable = true;
         el.addEventListener('dragstart', e => {
+          if (e.target.closest('.subtask-row')) return; // Let subtask drag handle it
           draggedTaskId = el.dataset.id;
           draggedProjectId = null;
+          draggedSubId = null;
           el.classList.add('dragging');
           e.dataTransfer.setData('text/plain', draggedTaskId);
         });
@@ -1914,6 +1962,41 @@
           const targetId = el.dataset.id;
           if (draggedTaskId && draggedTaskId !== targetId) {
             reorderTasks(draggedTaskId, targetId);
+          }
+        });
+      });
+
+      // Subtask drag
+      document.querySelectorAll('.subtask-row').forEach(el => {
+        el.draggable = true;
+        el.addEventListener('dragstart', e => {
+          draggedSubId = el.dataset.subid;
+          const taskEl = el.closest('.task');
+          draggedTaskId = taskEl.dataset.id;
+          draggedProjectId = null;
+          el.classList.add('dragging');
+          e.stopPropagation();
+          e.dataTransfer.setData('text/subtask', draggedSubId);
+        });
+        el.addEventListener('dragend', () => {
+          draggedSubId = null;
+          draggedTaskId = null;
+          el.classList.remove('dragging');
+          document.querySelectorAll('.subtask-row').forEach(t => t.classList.remove('drag-over'));
+        });
+        el.addEventListener('dragover', e => {
+          e.preventDefault();
+          e.stopPropagation();
+          el.classList.add('drag-over');
+        });
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+        el.addEventListener('drop', e => {
+          e.preventDefault();
+          e.stopPropagation();
+          const targetSubId = el.dataset.subid;
+          const targetTaskId = el.closest('.task').dataset.id;
+          if (draggedSubId && draggedTaskId === targetTaskId && draggedSubId !== targetSubId) {
+            reorderSubtasks(draggedTaskId, draggedSubId, targetSubId);
           }
         });
       });
@@ -2014,6 +2097,18 @@
       if (draggedIdx === -1 || targetIdx === -1) return;
       const [movedProject] = state.projects.splice(draggedIdx, 1);
       state.projects.splice(targetIdx, 0, movedProject);
+      save(state);
+      renderAll();
+    }
+
+    function reorderSubtasks(taskId, draggedSubId, targetSubId) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      const draggedIdx = t.subtasks.findIndex(s => s.id === draggedSubId);
+      const targetIdx = t.subtasks.findIndex(s => s.id === targetSubId);
+      if (draggedIdx === -1 || targetIdx === -1) return;
+      const [movedSub] = t.subtasks.splice(draggedIdx, 1);
+      t.subtasks.splice(targetIdx, 0, movedSub);
       save(state);
       renderAll();
     }

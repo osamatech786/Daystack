@@ -129,10 +129,10 @@ Each column has a filter bar above the task list:
 1. Toggle `subtask.done`
 2. If ALL subtasks done → `task._done = true`, `task._struck = false`
 
-### Delete task (× button)
-1. Remove from `state.tasks`
+### Delete task/subtask (× button)
+1. Remove task or subtask from `state.tasks`
 2. localStorage saved
-3. If was struck → won't return tomorrow
+3. If task was struck → won't return tomorrow
 
 ### Undo (Done tab)
 1. Reset `task._done = false`
@@ -156,7 +156,7 @@ Each column has a filter bar above the task list:
 - Press Enter to save, Esc to cancel (for tasks/subtasks), or use the prompt for groups.
 
 ### Drag and Drop
-- **Reorder**: Drop a task on another task or a group on another group to change its position.
+- **Reorder**: Drop a task on another task, a group on another group, or a subtask on another subtask to change its position.
 - **Move to Group**: Drop a task onto a **Group Header** in a column OR onto a **Group Tag** in the top bar to reassign it.
 
 ### Toggle Recurring
