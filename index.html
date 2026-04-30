@@ -152,6 +152,28 @@
       border-radius: 4px;
       color: var(--text);
       text-align: center;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    [data-theme="dark"] .tab:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .tab.active {
+      background: var(--text);
+      color: var(--bg);
+      font-weight: 600;
+    }
+
+    .tab.active .badge {
+      background: rgba(255,255,255,0.2);
+      color: inherit;
+    }
+    [data-theme="dark"] .tab.active .badge {
+      background: rgba(0,0,0,0.2);
     }
 
     .header-row {
@@ -1222,7 +1244,7 @@
     </div>
   `).join('');
 
-      const addSubBtn = view !== 'done' ? `<button class="add-sub-btn" data-action="add-sub" data-tid="${task.id}" title="Add a subtask to this task">+ Add subtask</button>` : '';
+      const addSubBtn = view !== 'done' ? `<button class="add-sub-btn" data-action="add-sub" data-tid="${task.id}" data-view="${view}" title="Add a subtask to this task">+ Add subtask</button>` : '';
       const undoBtn = showUndo ? `<button class="undo-btn" data-action="undo" data-tid="${task.id}" title="Move task back to In Progress">↩ undo</button>` : '';
 
       return `
@@ -1542,9 +1564,9 @@
 
     let activeSubtaskInput = null;
 
-    function showSubtaskInput(taskId) {
+    function showSubtaskInput(taskId, view) {
       if (activeSubtaskInput) { activeSubtaskInput.remove(); activeSubtaskInput = null; }
-      const taskEl = document.querySelector(`.task[data-id="${taskId}"]`);
+      const taskEl = document.querySelector(`#content-${view} .task[data-id="${taskId}"]`);
       if (!taskEl) return;
       const list = taskEl.querySelector('.subtask-list');
       const input = document.createElement('input');
@@ -1552,12 +1574,13 @@
       input.placeholder = 'Add subtask... (Enter to confirm, Esc to cancel)';
       input.dataset.action = 'sub-input';
       input.dataset.tid = taskId;
+      input.dataset.view = view;
       list.appendChild(input);
       input.focus();
       activeSubtaskInput = input;
     }
 
-    function addSubtaskFromInput(taskId, val) {
+    function addSubtaskFromInput(taskId, val, view) {
       if (!val.trim()) return;
       const t = state.tasks.find(t => t.id === taskId);
       if (!t) return;
@@ -1569,7 +1592,7 @@
       save(state);
       renderAll();
       // Re-open and focus subtask input for same task
-      showSubtaskInput(taskId);
+      showSubtaskInput(taskId, view);
     }
 
     // Close subtask input when clicking outside
@@ -1681,7 +1704,8 @@
 
       else if (action === 'add-sub') {
         const tid = actionEl.dataset.tid;
-        showSubtaskInput(tid);
+        const view = actionEl.dataset.view;
+        showSubtaskInput(tid, view);
       }
 
       else if (action === 'toggle-pri') {
@@ -1748,7 +1772,7 @@
 
       else if (action === 'sub-input') {
         if (e.key === 'Enter') {
-          addSubtaskFromInput(e.target.dataset.tid, e.target.value);
+          addSubtaskFromInput(e.target.dataset.tid, e.target.value, e.target.dataset.view);
           activeSubtaskInput = null;
         }
         if (e.key === 'Escape') {
