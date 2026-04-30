@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daystack 🧘 Radical Minimalist Focus</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧘</text></svg>">
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --border: #e0e0e0;
+      --pri-red: #ef4444;
+      --pri-yellow: #eab308;
+      --pri-green: #22c55e;
+      --pri-none: #9ca3af;
+      --radius: 6px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #1a1a1a;
+      --surface: #2a2a2a;
+      --text: #f0f0f0;
+      --border: #404040;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        width: 0;
+        opacity: 0;
+      }
+
+      to {
+        width: 100%;
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.4;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0.4;
+      }
+    }
+
+    html,
+    body {
+      background: var(--bg);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .app-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .header-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .tab-bar {
+      flex: 1;
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 4px;
+    }
+
+    .file-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .file-btn {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+      color: var(--text);
+    }
+
+    .file-btn:hover {
+      background: var(--bg);
+    }
+
+    /* Tab bar */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 4px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      border-radius: 4px;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--border);
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    /* Columns */
+    .column {
+      max-width: 100%;
+      background: var(--surface);
+      border-radius: var(--radius);
+      min-height: 200px;
+      display: none;
+    }
+
+    .column.active {
+      display: block;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .reset-timer {
+      font-size: 10px;
+      opacity: 0.4;
+      font-weight: 700;
+      white-space: nowrap;
+      margin-right: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Task */
+    .task {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+      transition: background 0.2s, transform 0.1s;
+      background: var(--surface);
+    }
+
+    .task.dragging {
+      opacity: 0.5;
+      background: var(--bg);
+      transform: scale(0.98);
+    }
+
+    .task.drag-over {
+      border-top: 2px solid var(--text);
+    }
+
+    .task:last-child {
+      border-bottom: none;
+    }
+
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .task-title {
+      flex: 1;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .task-title.struck {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .recur-icon {
+      font-size: 11px;
+      opacity: 0.3;
+      margin-right: 6px;
+      vertical-align: middle;
+      cursor: pointer;
+      transition: opacity 0.2s, color 0.2s, transform 0.2s;
+    }
+
+    .recur-icon:hover {
+      opacity: 1;
+      transform: rotate(30deg);
+    }
+
+    .recur-icon.is-active {
+      color: var(--pri-green);
+      opacity: 0.8;
+    }
+
+    /* Groups */
+    .group-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px 2px;
+      margin-top: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text);
+      opacity: 0.4;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.2s;
+    }
+
+    .group-header:hover {
+      opacity: 0.8;
+    }
+
+    .group-header i {
+      font-style: normal;
+      margin-right: 8px;
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+
+    .group-header.collapsed i {
+      transform: rotate(-90deg);
+    }
+
+    .group-tasks.collapsed {
+      display: none;
+    }
+
+    .group-actions {
+      margin-left: auto;
+      display: none;
+      gap: 8px;
+    }
+
+    .group-header:hover .group-actions {
+      display: flex;
+    }
+
+    .group-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 10px;
+      cursor: pointer;
+      padding: 2px;
+    }
+
+    /* Unified Group Bar */
+    .group-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .group-bar::-webkit-scrollbar { display: none; }
+
+    .g-tag {
+      position: relative;
+      font-size: 11px;
+      padding: 4px 10px;
+      padding-right: 24px; /* Space for X */
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .g-tag.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+    .g-tag:hover .g-del { opacity: 1; }
+
+    .g-del {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      opacity: 0.3;
+      padding: 2px;
+      line-height: 1;
+      transition: opacity 0.2s;
+    }
+    .g-del:hover { color: var(--pri-red); opacity: 1; }
+
+    .add-group-btn {
+      font-size: 11px;
+      padding: 4px 10px;
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      opacity: 0.5;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .add-group-btn:hover { opacity: 1; border-style: solid; }
+
+    /* Priority dot */
+    .pri-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .pri-none {
+      background: var(--pri-none);
+    }
+
+    .pri-red {
+      background: var(--pri-red);
+    }
+
+    .pri-yellow {
+      background: var(--pri-yellow);
+    }
+
+    .pri-green {
+      background: var(--pri-green);
+    }
+
+    /* Delete btn */
+    .del-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 4px;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    .task:hover .del-btn {
+      opacity: 1;
+    }
+
+    .del-btn:hover {
+      color: var(--pri-red);
+    }
+
+    /* Subtask list */
+    .subtask-list {
+      margin-left: 20px;
+      margin-top: 6px;
+    }
+
+    .subtask-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 0;
+    }
+
+    .chk {
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--pri-none);
+      flex-shrink: 0;
+    }
+
+    .chk.checked {
+      color: var(--pri-green);
+    }
+
+    .subtask-title {
+      font-size: 13px;
+    }
+
+    .subtask-title.struck {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    /* Add subtask btn */
+    .add-sub-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #bbb;
+      font-size: 12px;
+      margin-top: 6px;
+      padding: 0;
+    }
+
+    .add-sub-btn:hover {
+      color: var(--text);
+    }
+
+    /* Undo btn */
+    .undo-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #bbb;
+      font-size: 12px;
+      margin-top: 6px;
+      padding: 0;
+    }
+
+    .undo-btn:hover {
+      color: var(--text);
+    }
+
+    /* Priority picker */
+    .pri-picker {
+      position: relative;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .pri-menu {
+      position: absolute;
+      left: 0;
+      top: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      padding: 4px;
+      min-width: 90px;
+      display: none;
+    }
+
+    .pri-menu.show {
+      display: block;
+    }
+
+    .pri-opt {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      border-radius: 3px;
+    }
+
+    .pri-opt:hover {
+      background: var(--bg);
+    }
+
+    .pri-opt[data-pri="none"] {
+      color: var(--pri-none);
+    }
+
+    .pri-opt[data-pri="red"] {
+      color: var(--pri-red);
+    }
+
+    .pri-opt[data-pri="yellow"] {
+      color: var(--pri-yellow);
+    }
+
+    .pri-opt[data-pri="green"] {
+      color: var(--pri-green);
+    }
+
+    /* Subtask inline input */
+    .sub-input {
+      width: 100%;
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 13px;
+      margin-top: 6px;
+      background: var(--bg);
+      outline: none;
+      font-family: inherit;
+    }
+
+    .sub-input:focus {
+      border-color: var(--text);
+    }
+
+    .sub-input,
+    .add-input {
+      color: var(--text);
+    }
+
+    /* Add task row */
+    .add-row {
+      padding: 10px 16px 16px;
+    }
+
+    .add-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 14px;
+      background: var(--bg);
+      outline: none;
+      font-family: inherit;
+    }
+
+    .add-input:focus {
+      border-color: var(--text);
+    }
+
+    /* Empty state */
+    .empty-state {
+      padding: 24px 16px;
+      text-align: center;
+      color: #aaa;
+      font-size: 13px;
+    }
+
+    .col-content {
+      min-height: 200px;
+    }
+
+
+    .col-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px 4px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .col-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .clear-btn, .expand-all-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 11px;
+      color: #bbb;
+      padding: 2px 6px;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+
+    .clear-btn:hover, .expand-all-btn:hover {
+      color: var(--pri-red);
+      background: #fef2f2;
+    }
+
+    .expand-all-btn {
+      margin-left: 8px;
+      font-size: 12px;
+      padding: 2px 4px;
+    }
+
+    .clear-btn:hover {
+      color: var(--pri-red);
+      background: #fef2f2;
+    }
+
+    /* Filter/sort bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .filter-label {
+      font-size: 11px;
+      color: #aaa;
+      margin-right: 2px;
+    }
+
+    .filt-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      padding: 3px 7px;
+      color: var(--text);
+      opacity: 0.5;
+    }
+
+    .filt-btn.active {
+      opacity: 1;
+      border-color: var(--text);
+      background: var(--bg);
+    }
+
+    .filt-btn:hover {
+      opacity: 0.9;
+    }
+
+    .filt-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .filt-dot.pri-none {
+      background: var(--pri-none);
+    }
+
+    .filt-dot.pri-red {
+      background: var(--pri-red);
+    }
+
+    .filt-dot.pri-yellow {
+      background: var(--pri-yellow);
+    }
+
+    .filt-dot.pri-green {
+      background: var(--pri-green);
+    }
+
+    .sort-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      padding: 3px 7px;
+      color: var(--text);
+      opacity: 0.5;
+      margin-left: auto;
+    }
+
+    .sort-btn.active {
+      opacity: 1;
+      border-color: var(--text);
+      background: var(--bg);
+    }
+
+    .sort-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Search Bar */
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px 8px;
+    }
+
+    .search-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .file-btns {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .file-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--text);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* Dirty indicator */
+    .dirty-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--pri-red);
+      border-radius: 50%;
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      display: none;
+      animation: pulse 2s infinite;
+    }
+
+    .dirty-dot.show {
+      display: block;
+    }
+
+    .btn-wrap {
+      position: relative;
+    }
+
+    /* Edit Input */
+    .edit-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--text);
+      color: inherit;
+      font-family: inherit;
+      font-size: inherit;
+      width: 100%;
+      outline: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 40px;
+      padding: 24px 0;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+
+    footer:hover {
+      opacity: 1;
+    }
+
+    .footer-text {
+      font-size: 13px;
+      margin-bottom: 12px;
+      letter-spacing: 0.3px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .footer-link {
+      color: var(--text);
+      text-decoration: none;
+      transition: transform 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .footer-link:hover {
+      transform: translateY(-2px);
+      color: var(--pri-red);
+    }
+
+    .footer-link svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    @media (max-width: 600px) {
+      .search-wrap {
+        flex-wrap: wrap;
+      }
+      .file-btns {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .tab-bar {
+        justify-content: flex-start;
+        padding-bottom: 4px;
+      }
+
+      .tab-bar::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tab {
+        min-width: 72px;
+        scroll-snap-align: start;
+        flex-shrink: 0;
+      }
+
+      .file-btns {
+        justify-content: flex-end;
+      }
+
+      .undo-btn {
+        opacity: 1;
+      }
+
+      .filter-bar {
+        gap: 4px;
+        padding: 6px 12px;
+      }
+
+      .filter-label {
+        display: none;
+      }
+
+      .filt-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+
+      .sort-btn {
+        font-size: 10px;
+        padding: 4px 8px;
+        margin-left: 4px;
+      }
+
+      .task {
+        padding: 14px 12px;
+      }
+
+      .task-title {
+        font-size: 15px;
+      }
+
+      .subtask-title {
+        font-size: 14px;
+      }
+
+      .add-input {
+        font-size: 15px;
+        padding: 10px 12px;
+      }
+
+      .sub-input {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-wrap">
+    <div id="app">
+      <div class="header-row">
+        <div class="tab-bar">
+          <button class="tab active" data-view="today">For Today <span class="badge" id="badge-today"></span></button>
+          <button class="tab" data-view="progress">In Progress <span class="badge" id="badge-progress"></span></button>
+          <button class="tab" data-view="done">Done <span class="badge" id="badge-done"></span></button>
+          <button class="tab" data-view="recurring">Recurring <span class="badge" id="badge-recurring"></span></button>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <input type="text" class="search-input" id="search-tasks" placeholder="Search tasks, groups, or subtasks...">
+        <div class="file-btns">
+          <div class="btn-wrap">
+            <button class="file-btn" id="btn-export">Save</button>
+            <div class="dirty-dot" id="save-dirty"></div>
+          </div>
+          <button class="file-btn" id="btn-import">Load</button>
+          <input type="file" id="file-import" accept=".json" style="display:none">
+          <button class="file-btn" id="btn-theme" title="Toggle dark mode">☀</button>
+        </div>
+      </div>
+
+      <div class="group-bar" id="group-bar">
+        <div class="reset-timer" id="reset-timer">Reset: --:--</div>
+        <!-- Groups & +Group button -->
+      </div>
+      <div class="column active" id="col-today">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">Pri:</span>
+            <button class="filt-btn active" data-col="today" data-filt-pri="all">All</button>
+            <button class="filt-btn" data-col="today" data-filt-pri="red"><span
+                class="filt-dot pri-red"></span></button>
+            <button class="filt-btn" data-col="today" data-filt-pri="yellow"><span
+                class="filt-dot pri-yellow"></span></button>
+            <button class="filt-btn" data-col="today" data-filt-pri="green"><span
+                class="filt-dot pri-green"></span></button>
+            <button class="filt-btn" data-col="today" data-filt-pri="none"><span
+                class="filt-dot pri-none"></span></button>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">Status:</span>
+            <button class="filt-btn active" data-col="today" data-filt-status="all">All</button>
+            <button class="filt-btn" data-col="today" data-filt-status="struck">In Progress</button>
+            <button class="filt-btn" data-col="today" data-filt-status="not-struck">Not Started</button>
+          </div>
+          <button class="sort-btn" data-col="today">Sort: Priority</button>
+        </div>
+        <div class="col-content" id="content-today"></div>
+      </div>
+      <div class="column" id="col-progress">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">Pri:</span>
+            <button class="filt-btn active" data-col="progress" data-filt-pri="all">All</button>
+            <button class="filt-btn" data-col="progress" data-filt-pri="red"><span
+                class="filt-dot pri-red"></span></button>
+            <button class="filt-btn" data-col="progress" data-filt-pri="yellow"><span
+                class="filt-dot pri-yellow"></span></button>
+            <button class="filt-btn" data-col="progress" data-filt-pri="green"><span
+                class="filt-dot pri-green"></span></button>
+            <button class="filt-btn" data-col="progress" data-filt-pri="none"><span
+                class="filt-dot pri-none"></span></button>
+          </div>
+          <button class="sort-btn" data-col="progress">Sort: Priority</button>
+        </div>
+        <div class="col-content" id="content-progress"></div>
+      </div>
+      <div class="column" id="col-done">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">Pri:</span>
+            <button class="filt-btn active" data-col="done" data-filt-pri="all">All</button>
+            <button class="filt-btn" data-col="done" data-filt-pri="red"><span class="filt-dot pri-red"></span></button>
+            <button class="filt-btn" data-col="done" data-filt-pri="yellow"><span
+                class="filt-dot pri-yellow"></span></button>
+            <button class="filt-btn" data-col="done" data-filt-pri="green"><span
+                class="filt-dot pri-green"></span></button>
+            <button class="filt-btn" data-col="done" data-filt-pri="none"><span
+                class="filt-dot pri-none"></span></button>
+          </div>
+          <button class="sort-btn" data-col="done">Sort: Priority</button>
+        </div>
+        <div class="col-content" id="content-done"></div>
+      </div>
+      <div class="column" id="col-recurring">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">Pri:</span>
+            <button class="filt-btn active" data-col="recurring" data-filt-pri="all">All</button>
+            <button class="filt-btn" data-col="recurring" data-filt-pri="red"><span
+                class="filt-dot pri-red"></span></button>
+            <button class="filt-btn" data-col="recurring" data-filt-pri="yellow"><span
+                class="filt-dot pri-yellow"></span></button>
+            <button class="filt-btn" data-col="recurring" data-filt-pri="green"><span
+                class="filt-dot pri-green"></span></button>
+            <button class="filt-btn" data-col="recurring" data-filt-pri="none"><span
+                class="filt-dot pri-none"></span></button>
+          </div>
+          <button class="sort-btn" data-col="recurring">Sort: Priority</button>
+        </div>
+        <div class="col-content" id="content-recurring"></div>
+      </div>
+
+      <footer>
+        <div class="footer-text">Built with 🤍 for better days</div>
+        <div class="footer-links">
+          <a href="https://github.com/osamatech786/daystack" target="_blank" class="footer-link" title="GitHub">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+            </svg>
+            GitHub
+          </a>
+          <a href="https://www.linkedin.com/in/osamatech786" target="_blank" class="footer-link" title="LinkedIn">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+            </svg>
+            LinkedIn
+          </a>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'taskTracker_v1';
+    const today = () => new Date().toISOString().split('T')[0];
+    let fileHandle = null;
+    let isDirty = false;
+    let searchQuery = '';
+    let selectedProjectId = 'all';
+
+    // ── IndexedDB for Persistent File Handle ─────────────────────
+    const DB_NAME = 'DaystackDB';
+    const STORE_NAME = 'handles';
+
+    async function getDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = () => request.result.createObjectStore(STORE_NAME);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function saveHandle(handle) {
+      const db = await getDB();
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put(handle, 'activeFile');
+    }
+
+    async function loadHandle() {
+      const db = await getDB();
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      return new Promise((resolve) => {
+        const req = tx.objectStore(STORE_NAME).get('activeFile');
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    function load() {
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      if (!data.tasks) data.tasks = [];
+      if (!data.projects) data.projects = [];
+      if (!data.lastActiveDate) data.lastActiveDate = today();
+
+      if (data.lastActiveDate !== today()) {
+        // Daily reset: 
+        // 1. Reset daily tasks (return to For Today)
+        // 2. Keep one-off tasks that are NOT done
+        // 3. Drop one-off tasks that ARE done
+        data.tasks = data.tasks
+          .filter(t => t.source === 'daily' || (t.source === 'oneoff' && !t._done))
+          .map(t => {
+            if (t.source === 'daily') {
+              t._struck = false;
+              t._done = false;
+              t._undone = false;
+              t.subtasks.forEach(s => { s.done = false; });
+            }
+            return t;
+          });
+        data.lastActiveDate = today();
+        save(data);
+      }
+      return data;
+    }
+
+    function save(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      isDirty = true;
+      document.getElementById('save-dirty').classList.add('show');
+    }
+
+    let state = load();
+
+    const filterState = {
+      today: { pri: 'all', status: 'all', sort: false },
+      progress: { pri: 'all', sort: false },
+      done: { pri: 'all', sort: false },
+      recurring: { pri: 'all', sort: false }
+    };
+
+    const PRI_ORDER = { red: 0, yellow: 1, green: 2, none: 3 };
+
+    function applyFilters(tasks, view) {
+      const fs = filterState[view];
+      let result = tasks;
+
+      if (view === 'today') {
+        if (fs.status === 'struck') result = result.filter(t => t._struck);
+        else if (fs.status === 'not-struck') result = result.filter(t => !t._struck);
+      }
+
+      if (fs.pri !== 'all') {
+        result = result.filter(t => (t.priority || 'none') === fs.pri);
+      }
+
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        result = result.filter(t =>
+          t.title.toLowerCase().includes(q) ||
+          t.subtasks.some(s => s.title.toLowerCase().includes(q)) ||
+          (state.projects.find(p => p.id === t.projectId)?.title || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (selectedProjectId !== 'all') {
+        result = result.filter(t => (t.projectId || 'none') === selectedProjectId);
+      }
+
+      if (fs.sort) {
+        result = [...result].sort((a, b) => {
+          const pa = PRI_ORDER[a.priority || 'none'];
+          const pb = PRI_ORDER[b.priority || 'none'];
+          return pa - pb;
+        });
+      }
+
+      return result;
+    }
+
+    // ── Rendering ──────────────────────────────────────────────
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function renderTask(task, view) {
+      const done = task.subtasks.length > 0 && task.subtasks.every(s => s.done);
+      // Strikethrough only when: task done, OR (task struck AND shown in For Today after being clicked)
+      const titleStruck = done || (task._struck && view === 'today');
+      const showUndo = view === 'done';
+
+      const subtasksHtml = task.subtasks.map(s => `
+    <div class="subtask-row" data-subid="${s.id}">
+      <span class="chk ${s.done ? 'checked' : ''}" data-action="toggle-sub" data-tid="${task.id}" data-sid="${s.id}">${s.done ? '●' : '○'}</span>
+      <span class="subtask-title ${s.done ? 'struck' : ''}">${esc(s.title)}</span>
+    </div>
+  `).join('');
+
+      const addSubBtn = view !== 'done' ? `<button class="add-sub-btn" data-action="add-sub" data-tid="${task.id}" title="Add a subtask to this task">+ Add subtask</button>` : '';
+      const undoBtn = showUndo ? `<button class="undo-btn" data-action="undo" data-tid="${task.id}" title="Move task back to In Progress">↩ undo</button>` : '';
+
+      return `
+    <div class="task" data-id="${task.id}">
+      <div class="task-row">
+        <div class="pri-picker">
+          <span class="pri-dot pri-${task.priority || 'none'}" data-action="toggle-pri" data-tid="${task.id}" data-view="${view}" title="Click to set priority"></span>
+          <div class="pri-menu" id="pri-menu-${view}-${task.id}">
+            <div class="pri-opt" data-action="set-pri" data-tid="${task.id}" data-pri="none">○ none</div>
+            <div class="pri-opt" data-action="set-pri" data-tid="${task.id}" data-pri="red">● high</div>
+            <div class="pri-opt" data-action="set-pri" data-tid="${task.id}" data-pri="yellow">● medium</div>
+            <div class="pri-opt" data-action="set-pri" data-tid="${task.id}" data-pri="green">● low</div>
+          </div>
+        </div>
+        <span class="recur-icon ${task.source === 'daily' ? 'is-active' : ''}" 
+              data-action="toggle-recurring" data-tid="${task.id}"
+              title="${task.source === 'daily' ? 'Recurring daily task (Click to make one-off)' : 'One-off task (Click to make recurring)'}">↻</span>
+        <span class="task-title ${titleStruck ? 'struck' : ''}" 
+              data-action="task-click" data-tid="${task.id}" data-view="${view}"
+              title="${view === 'today' ? 'Click to mark In Progress' : 'Click to mark Done'} (Double-click to edit)">${esc(task.title)}</span>
+        <button class="del-btn" data-action="delete" data-tid="${task.id}" title="Delete task permanently">×</button>
+      </div>
+      <div class="subtask-list">${subtasksHtml}</div>
+      ${addSubBtn}${undoBtn}
+    </div>
+  `;
+    }
+
+    function renderCol(view, filterFn) {
+      const content = document.getElementById('content-' + view);
+      const filtered = applyFilters(state.tasks.filter(filterFn), view);
+      
+      const viewLabel = view === 'today' ? 'For Today' : view === 'progress' ? 'In Progress' : view === 'done' ? 'Done' : 'Recurring';
+      
+      content.innerHTML = `
+        <div class="col-header">
+          <div style="display:flex; align-items:center;">
+            <span class="col-label" title="Current view context">${viewLabel}</span>
+            <button class="expand-all-btn" data-action="toggle-all-groups" data-view="${view}" title="Master Toggle: Expand/Collapse all groups in this column">↕</button>
+          </div>
+          <button class="clear-btn" data-action="clear-tab" data-view="${view}" title="Clear all tasks from this view">Clear all</button>
+        </div>
+      `;
+
+      // Group tasks by project
+      const groups = {};
+      filtered.forEach(t => {
+        const pid = t.projectId || 'none';
+        if (!groups[pid]) groups[pid] = [];
+        groups[pid].push(t);
+      });
+
+      // Render Groups
+      const projectOrder = ['none', ...state.projects.map(p => p.id)];
+      projectOrder.forEach(pid => {
+        if (!groups[pid]) return;
+        let project = state.projects.find(p => p.id === pid);
+        if (pid === 'none') {
+          project = { id: 'none', title: 'General', collapsed: state.generalCollapsed || {} };
+        }
+        if (!project) return;
+        const isCollapsed = project.collapsed && project.collapsed[view];
+
+        const groupHtml = `
+          <div class="group-group">
+            <div class="group-header ${isCollapsed ? 'collapsed' : ''}" 
+                 data-action="toggle-group" data-pid="${pid}" data-view="${view}"
+                 title="Click to expand/collapse this group (or drag tasks here to move them)">
+              <i>▾</i> ${esc(project.title)}
+              <div class="group-actions">
+                ${pid !== 'none' ? `<button class="group-btn" data-action="delete-group" data-pid="${pid}" title="Delete this group (Tasks will move to General)">×</button>` : ''}
+              </div>
+            </div>
+            <div class="group-tasks ${isCollapsed ? 'collapsed' : ''}">
+              ${groups[pid].map(t => renderTask(t, view)).join('')}
+            </div>
+          </div>
+        `;
+        content.innerHTML += groupHtml;
+      });
+
+      if (filtered.length === 0) {
+        content.innerHTML += `
+          <div class="empty-state">
+            <div style="font-size:24px; margin-bottom:8px; opacity:0.3">🧘</div>
+            <div>All clear for ${viewLabel}</div>
+            <div style="font-size:10px; opacity:0.5; margin-top:4px;">You're on top of your game.</div>
+          </div>`;
+      }
+
+      if (view !== 'done') {
+        content.innerHTML += `
+    <div class="add-row">
+      <input class="add-input" placeholder="Add a task... (Enter to confirm, Esc to cancel)"
+        data-action="add-task" data-view="${view}">
+    </div>`;
+      }
+      // Update badge (unfiltered count)
+      const allFiltered = state.tasks.filter(filterFn);
+      const badge = document.getElementById('badge-' + view);
+      badge.textContent = allFiltered.length;
+    }
+
+    function isInProgress(t) { return t._struck && !t._done; }
+
+    function renderAll() {
+      // Group Bar
+      const gBar = document.getElementById('group-bar');
+      if (gBar) {
+        gBar.innerHTML = `<div class="reset-timer" id="reset-timer" title="Time remaining until the daily pool resets">Reset: --:--</div>`;
+        gBar.innerHTML += `<div class="g-tag ${selectedProjectId === 'all' ? 'active' : ''}" style="padding-right:10px" data-action="filter-group" data-pid="all" title="Show tasks from all groups">All</div>`;
+        gBar.innerHTML += `<div class="g-tag ${selectedProjectId === 'none' ? 'active' : ''}" style="padding-right:10px" data-action="filter-group" data-pid="none" title="Show tasks in General (Uncategorized)">General</div>`;
+        state.projects.forEach(p => {
+          gBar.innerHTML += `
+            <div class="g-tag ${selectedProjectId === p.id ? 'active' : ''}" data-action="filter-group" data-pid="${p.id}" title="Filter by: ${esc(p.title)} (Drag tasks here to move them)">
+              ${esc(p.title)}
+              <span class="g-del" data-action="delete-group" data-pid="${p.id}" title="Delete Group">×</span>
+            </div>`;
+        });
+        gBar.innerHTML += `<button class="add-group-btn" id="btn-add-group" title="Add Group">+ Group</button>`;
+        updateResetTimer();
+      }
+
+      renderCol('today', t => !t._done);
+      renderCol('progress', isInProgress);
+      renderCol('done', t => t._done);
+      renderCol('recurring', t => t.source === 'daily');
+      updateTabs(state.tasks);
+      attachDragEvents();
+    }
+
+    function updateTabs(tasks) {
+      document.getElementById('badge-today').textContent = tasks.filter(t => !t._done).length;
+      document.getElementById('badge-progress').textContent = tasks.filter(isInProgress).length;
+      document.getElementById('badge-done').textContent = tasks.filter(t => t._done).length;
+      document.getElementById('badge-recurring').textContent = tasks.filter(t => t.source === 'daily').length;
+    }
+
+    // ── Actions ─────────────────────────────────────────────────
+
+    function toggleInProgress(taskId) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      t._struck = !t._struck;
+      save(state);
+      renderAll();
+    }
+
+    function markDone(taskId) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      t._done = true;
+      t._struck = false;
+      save(state);
+      renderAll();
+    }
+
+    function deleteTask(taskId) {
+      state.tasks = state.tasks.filter(t => t.id !== taskId);
+      save(state);
+      renderAll();
+    }
+
+    function toggleRecurring(taskId) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      t.source = t.source === 'daily' ? 'oneoff' : 'daily';
+      save(state);
+      renderAll();
+    }
+
+    function addGroup() {
+      const title = prompt('Group name:');
+      if (!title) return;
+      const id = 'p-' + Date.now();
+      state.projects.push({ id, title, collapsed: {} });
+      save(state);
+      renderAll();
+    }
+
+    function deleteGroup(pid) {
+      state.projects = state.projects.filter(p => p.id !== pid);
+      state.tasks.forEach(t => { if (t.projectId === pid) t.projectId = 'none'; });
+      save(state);
+      renderAll();
+    }
+
+    function toggleGroup(pid, view) {
+      if (pid === 'none') {
+        if (!state.generalCollapsed) state.generalCollapsed = {};
+        state.generalCollapsed[view] = !state.generalCollapsed[view];
+      } else {
+        const p = state.projects.find(p => p.id === pid);
+        if (!p) return;
+        if (!p.collapsed) p.collapsed = {};
+        p.collapsed[view] = !p.collapsed[view];
+      }
+      save(state);
+      renderAll();
+    }
+
+    function toggleAllGroups(view) {
+      // Determine if we should collapse or expand
+      // Check first visible group's state
+      let shouldCollapse = true;
+      if (state.generalCollapsed && state.generalCollapsed[view]) shouldCollapse = false;
+      else {
+        const firstP = state.projects.find(p => p.collapsed && p.collapsed[view]);
+        if (firstP) shouldCollapse = false;
+      }
+
+      // Apply to General
+      if (!state.generalCollapsed) state.generalCollapsed = {};
+      state.generalCollapsed[view] = shouldCollapse;
+
+      // Apply to all projects
+      state.projects.forEach(p => {
+        if (!p.collapsed) p.collapsed = {};
+        p.collapsed[view] = shouldCollapse;
+      });
+
+      save(state);
+      renderAll();
+    }
+
+    function toggleSubtask(taskId, subId) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      const s = t.subtasks.find(s => s.id === subId);
+      if (!s) return;
+      s.done = !s.done;
+      if (t.subtasks.length > 0 && t.subtasks.every(s => s.done)) {
+        t._done = true;
+        t._struck = false;
+      }
+      save(state);
+      renderAll();
+    }
+
+    function undoTask(taskId) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      t._done = false;
+      t._struck = true;  // restore to In Progress, not For Today
+      t.subtasks.forEach(s => { s.done = false; });
+      t._undone = false; // reset so undo button stays available
+      save(state);
+      renderAll();
+    }
+
+    function addTask(view) {
+      const col = document.getElementById('col-' + view);
+      const input = col.querySelector('.add-input');
+      const val = input ? input.value.trim() : '';
+      if (!val) return;
+      const source = view === 'recurring' ? 'daily' : 'oneoff';
+      const dup = state.tasks.some(t => t.title.toLowerCase() === val.toLowerCase() && t.source === source);
+      if (dup) { input.value = ''; return; }
+      const newTask = {
+        id: Date.now() + Math.random().toString(36).slice(2),
+        title: val,
+        projectId: selectedProjectId !== 'all' ? selectedProjectId : 'none',
+        source,
+        priority: 'none',
+        subtasks: [],
+        createdAt: new Date().toISOString(),
+        _struck: false,
+        _done: false,
+        _undone: false,
+        order: state.tasks.length // For drag sorting
+      };
+      state.tasks.push(newTask);
+      input.value = '';
+      save(state);
+      renderAll();
+      // Re-focus the add-input for this view after re-render
+      setTimeout(() => {
+        const col = document.getElementById('col-' + view);
+        const inp = col ? col.querySelector('.add-input') : null;
+        if (inp) inp.focus();
+      }, 0);
+    }
+
+    function editTaskTitle(taskId, newTitle) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t || !newTitle.trim()) return;
+      t.title = newTitle.trim();
+      save(state);
+      renderAll();
+    }
+
+    function editSubtaskTitle(taskId, subId, newTitle) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      const s = t.subtasks.find(s => s.id === subId);
+      if (!s || !newTitle.trim()) return;
+      s.title = newTitle.trim();
+      save(state);
+      renderAll();
+    }
+
+    let activeSubtaskInput = null;
+
+    function showSubtaskInput(taskId) {
+      if (activeSubtaskInput) { activeSubtaskInput.remove(); activeSubtaskInput = null; }
+      const taskEl = document.querySelector(`.task[data-id="${taskId}"]`);
+      if (!taskEl) return;
+      const list = taskEl.querySelector('.subtask-list');
+      const input = document.createElement('input');
+      input.className = 'sub-input';
+      input.placeholder = 'Add subtask... (Enter to confirm, Esc to cancel)';
+      input.dataset.action = 'sub-input';
+      input.dataset.tid = taskId;
+      list.appendChild(input);
+      input.focus();
+      activeSubtaskInput = input;
+    }
+
+    function addSubtaskFromInput(taskId, val) {
+      if (!val.trim()) return;
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      t.subtasks.push({
+        id: Date.now() + Math.random().toString(36).slice(2),
+        title: val.trim(),
+        done: false
+      });
+      save(state);
+      renderAll();
+      // Re-open and focus subtask input for same task
+      showSubtaskInput(taskId);
+    }
+
+    // Close subtask input when clicking outside
+    document.addEventListener('click', e => {
+      if (!activeSubtaskInput) return;
+      if (e.target === activeSubtaskInput) return;
+      if (e.target.closest('[data-action="add-sub"]')) return;
+      activeSubtaskInput.remove();
+      activeSubtaskInput = null;
+    });
+
+    function togglePriPicker(taskId, view) {
+      const menu = document.getElementById(`pri-menu-${view}-${taskId}`);
+      document.querySelectorAll('.pri-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+      menu.classList.toggle('show');
+    }
+
+    function setPri(taskId, pri) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      t.priority = pri;
+      save(state);
+      renderAll();
+    }
+
+    function clearTab(view) {
+      if (view === 'today') {
+        state.tasks = state.tasks.filter(t => t._done); // Clears all not-done
+      } else if (view === 'progress') {
+        state.tasks.forEach(t => {
+          if (isInProgress(t)) { t._struck = false; }
+        });
+      } else if (view === 'recurring') {
+        state.tasks = state.tasks.filter(t => t.source !== 'daily');
+      } else {
+        state.tasks = state.tasks.filter(t => !t._done);
+      }
+      save(state);
+      renderAll();
+    }
+
+    // ── Event delegation ───────────────────────────────────────
+
+    document.addEventListener('click', e => {
+      // Filter/sort buttons — no data-action, check first
+      if (e.target.closest('[data-filt-pri]')) {
+        const btn = e.target.closest('[data-filt-pri]');
+        const col = btn.dataset.col;
+        const pri = btn.dataset.filtPri;
+        filterState[col].pri = pri;
+        document.querySelectorAll(`[data-col="${col}"][data-filt-pri]`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderAll();
+        return;
+      }
+
+      if (e.target.closest('[data-filt-status]')) {
+        const btn = e.target.closest('[data-filt-status]');
+        const col = btn.dataset.col;
+        const status = btn.dataset.filtStatus;
+        filterState[col].status = status;
+        document.querySelectorAll(`[data-col="${col}"][data-filt-status]`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderAll();
+        return;
+      }
+
+      if (e.target.closest('.sort-btn')) {
+        const btn = e.target.closest('.sort-btn');
+        const col = btn.dataset.col;
+        filterState[col].sort = !filterState[col].sort;
+        btn.classList.toggle('active', filterState[col].sort);
+        renderAll();
+        return;
+      }
+
+      // Priority picker close on outside click
+      if (!e.target.closest('.pri-picker')) {
+        document.querySelectorAll('.pri-menu').forEach(m => m.classList.remove('show'));
+      }
+
+      const action = e.target.dataset.action;
+      if (!action) return;
+
+      if (action === 'task-click') {
+        const tid = e.target.dataset.tid;
+        const view = e.target.dataset.view;
+        if (view === 'today') toggleInProgress(tid);
+        if (view === 'progress') markDone(tid);
+        // recurring tab: task-click does nothing (read-only master list)
+      }
+
+      else if (action === 'toggle-sub') {
+        const tid = e.target.dataset.tid;
+        const sid = e.target.dataset.sid;
+        toggleSubtask(tid, sid);
+      }
+
+      else if (action === 'delete') {
+        const tid = e.target.dataset.tid;
+        deleteTask(tid);
+      }
+
+      else if (action === 'undo') {
+        const tid = e.target.dataset.tid;
+        undoTask(tid);
+      }
+
+      else if (action === 'add-sub') {
+        const tid = e.target.dataset.tid;
+        showSubtaskInput(tid);
+      }
+
+      else if (action === 'toggle-pri') {
+        const tid = e.target.dataset.tid;
+        const view = e.target.dataset.view;
+        e.stopPropagation();
+        togglePriPicker(tid, view);
+      }
+
+      else if (action === 'set-pri') {
+        const tid = e.target.dataset.tid;
+        const pri = e.target.dataset.pri;
+        e.stopPropagation();
+        setPri(tid, pri);
+      }
+
+      else if (action === 'toggle-recurring') {
+        const tid = e.target.dataset.tid;
+        e.stopPropagation();
+        toggleRecurring(tid);
+      }
+
+      else if (action === 'toggle-group') {
+        const pid = e.target.dataset.pid;
+        const view = e.target.dataset.view;
+        toggleGroup(pid, view);
+      }
+
+      else if (action === 'filter-group') {
+        selectedProjectId = e.target.dataset.pid;
+        renderAll();
+      }
+
+      else if (action === 'delete-group') {
+        if (confirm('Delete this group? Tasks will move to General.')) {
+          deleteGroup(e.target.dataset.pid);
+        }
+      }
+
+      else if (action === 'toggle-all-groups') {
+        toggleAllGroups(e.target.dataset.view);
+      }
+
+      else if (action === 'clear-tab') {
+        clearTab(e.target.dataset.view);
+      }
+
+    });
+
+    document.addEventListener('keydown', e => {
+      const action = e.target.dataset.action;
+
+      if (action === 'add-task') {
+        if (e.key === 'Enter') {
+          addTask(e.target.dataset.view);
+        }
+        if (e.key === 'Escape') {
+          e.target.value = '';
+          e.target.blur();
+        }
+      }
+
+      else if (action === 'sub-input') {
+        if (e.key === 'Enter') {
+          addSubtaskFromInput(e.target.dataset.tid, e.target.value);
+          activeSubtaskInput = null;
+        }
+        if (e.key === 'Escape') {
+          e.target.remove();
+          activeSubtaskInput = null;
+        }
+      }
+
+      // Ctrl + S for Save
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        saveToFile();
+      }
+
+      // Alt + 1/2/3/4 for tab switching
+      if (e.altKey && e.key >= '1' && e.key <= '4') {
+        e.preventDefault();
+        const views = ['today', 'progress', 'done', 'recurring'];
+        const targetView = views[parseInt(e.key) - 1];
+        document.querySelectorAll('.tab').forEach(t => {
+          t.classList.toggle('active', t.dataset.view === targetView);
+        });
+        document.querySelectorAll('.column').forEach(c => {
+          c.classList.toggle('active', c.id === 'col-' + targetView);
+        });
+        renderAll();
+      }
+    });
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.column').forEach(c => c.classList.remove('active'));
+        document.getElementById('col-' + btn.dataset.view).classList.add('active');
+      });
+    });
+
+    // ── Boot ────────────────────────────────────────────────────
+    // Theme: restore from localStorage
+    const savedTheme = localStorage.getItem('daystack_theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.dataset.theme = 'dark';
+      document.getElementById('btn-theme').textContent = '☾';
+    }
+
+    document.getElementById('btn-theme').addEventListener('click', () => {
+      const btn = document.getElementById('btn-theme');
+      const isDark = document.documentElement.dataset.theme === 'dark';
+      if (isDark) {
+        delete document.documentElement.dataset.theme;
+        btn.textContent = '☀';
+        localStorage.setItem('daystack_theme', 'light');
+      } else {
+        document.documentElement.dataset.theme = 'dark';
+        btn.textContent = '☾';
+        localStorage.setItem('daystack_theme', 'dark');
+      }
+    });
+
+    // Search input handler
+    document.getElementById('search-tasks').addEventListener('input', e => {
+      searchQuery = e.target.value;
+      renderAll();
+    });
+
+    // Inline Editing (Double Click)
+    document.addEventListener('dblclick', e => {
+      if (e.target.classList.contains('task-title')) {
+        const span = e.target;
+        const tid = span.dataset.tid;
+        const oldVal = span.textContent;
+        const input = document.createElement('input');
+        input.className = 'edit-input';
+        input.value = oldVal;
+        span.replaceWith(input);
+        input.focus();
+        input.onblur = () => editTaskTitle(tid, input.value);
+        input.onkeydown = ev => {
+          if (ev.key === 'Enter') input.blur();
+          if (ev.key === 'Escape') { input.value = oldVal; input.blur(); }
+        };
+      }
+      if (e.target.classList.contains('subtask-title')) {
+        const span = e.target;
+        const row = span.closest('.subtask-row');
+        const sid = row.dataset.subid;
+        const tid = span.closest('.task').dataset.id;
+        const oldVal = span.textContent;
+        const input = document.createElement('input');
+        input.className = 'edit-input';
+        input.value = oldVal;
+        span.replaceWith(input);
+        input.focus();
+        input.onblur = () => editSubtaskTitle(tid, sid, input.value);
+        input.onkeydown = ev => {
+          if (ev.key === 'Enter') input.blur();
+          if (ev.key === 'Escape') { input.value = oldVal; input.blur(); }
+        };
+      }
+    });
+
+    // ── Drag and Drop ───────────────────────────────────────────
+    let draggedTaskId = null;
+
+    function attachDragEvents() {
+      // Task drag
+      document.querySelectorAll('.task').forEach(el => {
+        el.draggable = true;
+        el.addEventListener('dragstart', e => {
+          draggedTaskId = el.dataset.id;
+          el.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', draggedTaskId);
+        });
+        el.addEventListener('dragend', () => {
+          el.classList.remove('dragging');
+          document.querySelectorAll('.task, .group-header, .g-tag').forEach(t => t.classList.remove('drag-over'));
+        });
+        el.addEventListener('dragover', e => {
+          e.preventDefault();
+          el.classList.add('drag-over');
+        });
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+        el.addEventListener('drop', e => {
+          e.preventDefault();
+          const targetId = el.dataset.id;
+          if (draggedTaskId !== targetId) {
+            reorderTasks(draggedTaskId, targetId);
+          }
+        });
+      });
+
+      // Group drop targets (Headers in columns)
+      document.querySelectorAll('.group-header').forEach(el => {
+        el.addEventListener('dragover', e => {
+          e.preventDefault();
+          el.classList.add('drag-over');
+        });
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+        el.addEventListener('drop', e => {
+          e.preventDefault();
+          const pid = el.dataset.pid;
+          moveTaskToGroup(draggedTaskId, pid);
+        });
+      });
+
+      // Group Tag drop targets (Top bar)
+      document.querySelectorAll('.g-tag').forEach(el => {
+        el.addEventListener('dragover', e => {
+          e.preventDefault();
+          el.classList.add('drag-over');
+        });
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+        el.addEventListener('drop', e => {
+          e.preventDefault();
+          const pid = el.dataset.pid;
+          if (pid === 'all') return; // Can't move to 'All'
+          moveTaskToGroup(draggedTaskId, pid);
+        });
+      });
+    }
+
+    function moveTaskToGroup(taskId, pid) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      t.projectId = pid;
+      save(state);
+      renderAll();
+    }
+
+    function reorderTasks(draggedId, targetId) {
+      const draggedIdx = state.tasks.findIndex(t => t.id === draggedId);
+      const targetIdx = state.tasks.findIndex(t => t.id === targetId);
+      const [movedTask] = state.tasks.splice(draggedIdx, 1);
+      state.tasks.splice(targetIdx, 0, movedTask);
+      save(state);
+      renderAll();
+    }
+
+    // ── Boot ────────────────────────────────────────────────────
+    function updateResetTimer() {
+      const now = new Date();
+      const night = new Date();
+      night.setHours(24, 0, 0, 0);
+      const diff = night - now;
+      const hh = Math.floor(diff / 1000 / 60 / 60);
+      const mm = Math.floor((diff / 1000 / 60) % 60);
+      document.getElementById('reset-timer').textContent = `Next Reset: ${hh}h ${mm}m`;
+    }
+    setInterval(updateResetTimer, 60000);
+    updateResetTimer();
+
+    (async () => {
+      // Restore handle
+      try {
+        const handle = await loadHandle();
+        if (handle) {
+          // Check if we still have permission (might fail without user gesture)
+          if (await handle.queryPermission() === 'granted') {
+            fileHandle = handle;
+          }
+        }
+      } catch (e) { }
+
+      // Theme
+      const savedTheme = localStorage.getItem('daystack_theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+        document.getElementById('btn-theme').textContent = '☾';
+      }
+      renderAll();
+    })();
+
+    // ── File export / import (File System Access API) ─────────────────
+
+    async function saveToFile(forceSaveAs = false) {
+      if (!window.showSaveFilePicker) {
+        // Fallback for browsers that don't support File System Access API
+        const ts = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tasks-${ts}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+
+      try {
+        if (!fileHandle || forceSaveAs) {
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: 'daystack-tasks.json',
+            types: [{
+              description: 'JSON Files',
+              accept: { 'application/json': ['.json'] },
+            }],
+          });
+          await saveHandle(fileHandle);
+        }
+
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(state, null, 2));
+        await writable.close();
+
+        isDirty = false;
+        document.getElementById('save-dirty').classList.remove('show');
+
+        // Visual feedback
+        const btn = document.getElementById('btn-export');
+        const oldText = btn.textContent;
+        btn.textContent = 'Saved!';
+        btn.style.borderColor = 'var(--pri-green)';
+        setTimeout(() => {
+          btn.textContent = oldText;
+          btn.style.borderColor = '';
+        }, 1500);
+
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error(err);
+          alert('Failed to save file.');
+        }
+      }
+    }
+
+    async function loadFromFile() {
+      if (!window.showOpenFilePicker) {
+        // Fallback for browsers that don't support File System Access API
+        document.getElementById('file-import').click();
+        return;
+      }
+
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          types: [{
+            description: 'JSON Files',
+            accept: { 'application/json': ['.json'] },
+          }],
+          multiple: false
+        });
+
+        fileHandle = handle;
+        await saveHandle(fileHandle);
+        const file = await fileHandle.getFile();
+        const contents = await file.text();
+        const imported = JSON.parse(contents);
+
+        state.tasks = imported.tasks || [];
+        state.lastActiveDate = imported.lastActiveDate || today();
+        save(state);
+        isDirty = false; // Freshly loaded
+        document.getElementById('save-dirty').classList.remove('show');
+        renderAll();
+
+        // Visual feedback
+        const btn = document.getElementById('btn-import');
+        const oldText = btn.textContent;
+        btn.textContent = 'Loaded!';
+        btn.style.borderColor = 'var(--pri-green)';
+        setTimeout(() => {
+          btn.textContent = oldText;
+          btn.style.borderColor = '';
+        }, 1500);
+
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error(err);
+          alert('Failed to load file.');
+        }
+      }
+    }
+
+    // delegation for dynamic +Group button
+    document.addEventListener('click', e => {
+      if (e.target && e.target.id === 'btn-add-group') addGroup();
+    });
+
+    document.getElementById('btn-export').addEventListener('click', () => saveToFile());
+
+    // Right click on Save button to "Save As"
+    document.getElementById('btn-export').addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      saveToFile(true);
+    });
+
+    document.getElementById('btn-import').addEventListener('click', () => loadFromFile());
+
+    // Original hidden input fallback listener
+    document.getElementById('file-import').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          const imported = JSON.parse(ev.target.result);
+          state.tasks = imported.tasks || [];
+          state.lastActiveDate = imported.lastActiveDate || today();
+          save(state);
+          renderAll();
+        } catch (err) {
+          alert('Invalid file format');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+  </script>
+</body>
+
+</html>
