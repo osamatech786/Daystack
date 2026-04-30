@@ -264,25 +264,39 @@
       opacity: 0.8;
     }
 
-    /* Groups */
+    .group-group {
+      border-top: 6px solid var(--bg);
+    }
+    .group-group:first-child {
+      border-top: none;
+    }
+
     .group-header {
       display: flex;
       align-items: center;
-      padding: 8px 12px 2px;
-      margin-top: 8px;
-      font-size: 10px;
+      padding: 10px 12px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: var(--text);
-      opacity: 0.4;
+      opacity: 0.7;
       cursor: pointer;
       user-select: none;
-      transition: opacity 0.2s;
+      transition: all 0.2s;
+      background: rgba(0,0,0,0.02);
+      border-bottom: 1px solid var(--border);
+    }
+    [data-theme="dark"] .group-header {
+      background: rgba(255,255,255,0.03);
     }
 
     .group-header:hover {
-      opacity: 0.8;
+      opacity: 0.9;
+      background: rgba(0,0,0,0.03);
+    }
+    [data-theme="dark"] .group-header:hover {
+      background: rgba(255,255,255,0.05);
     }
 
     .group-header i {
@@ -1264,13 +1278,14 @@
       // Render Groups
       const projectOrder = ['none', ...state.projects.map(p => p.id)];
       projectOrder.forEach(pid => {
-        if (!groups[pid]) return;
         let project = state.projects.find(p => p.id === pid);
         if (pid === 'none') {
           project = { id: 'none', title: 'General', collapsed: state.generalCollapsed || {} };
         }
         if (!project) return;
+
         const isCollapsed = project.collapsed && project.collapsed[view];
+        const groupTasks = groups[pid] || [];
 
         const groupHtml = `
           <div class="group-group">
@@ -1283,7 +1298,14 @@
               </div>
             </div>
             <div class="group-tasks ${isCollapsed ? 'collapsed' : ''}">
-              ${groups[pid].map(t => renderTask(t, view)).join('')}
+              ${groupTasks.map(t => renderTask(t, view)).join('')}
+              ${view !== 'done' ? `
+                <div class="add-row" style="padding: 8px 12px;">
+                  <input class="add-input" style="font-size: 12px; padding: 6px 10px;" 
+                    placeholder="Add task to ${esc(project.title)}..."
+                    data-action="add-task" data-view="${view}" data-pid="${pid}">
+                </div>
+              ` : ''}
             </div>
           </div>
         `;
@@ -1299,17 +1321,10 @@
           </div>`;
       }
 
-      if (view !== 'done') {
-        content.innerHTML += `
-    <div class="add-row">
-      <input class="add-input" placeholder="Add a task... (Enter to confirm, Esc to cancel)"
-        data-action="add-task" data-view="${view}">
-    </div>`;
-      }
       // Update badge (unfiltered count)
       const allFiltered = state.tasks.filter(filterFn);
       const badge = document.getElementById('badge-' + view);
-      badge.textContent = allFiltered.length;
+      if (badge) badge.textContent = allFiltered.length;
     }
 
     function isInProgress(t) { return t._struck && !t._done; }
@@ -1459,10 +1474,10 @@
       renderAll();
     }
 
-    function addTask(view) {
-      const col = document.getElementById('col-' + view);
-      const input = col.querySelector('.add-input');
-      const val = input ? input.value.trim() : '';
+    function addTask(input) {
+      const view = input.dataset.view;
+      const pid = input.dataset.pid;
+      const val = input.value.trim();
       if (!val) return;
       const source = view === 'recurring' ? 'daily' : 'oneoff';
       const dup = state.tasks.some(t => t.title.toLowerCase() === val.toLowerCase() && t.source === source);
@@ -1470,7 +1485,7 @@
       const newTask = {
         id: Date.now() + Math.random().toString(36).slice(2),
         title: val,
-        projectId: selectedProjectId !== 'all' ? selectedProjectId : 'none',
+        projectId: pid || 'none',
         source,
         priority: 'none',
         subtasks: [],
@@ -1484,11 +1499,11 @@
       input.value = '';
       save(state);
       renderAll();
-      // Re-focus the add-input for this view after re-render
+      
+      // Attempt to re-focus the specific group input after re-render
       setTimeout(() => {
-        const col = document.getElementById('col-' + view);
-        const inp = col ? col.querySelector('.add-input') : null;
-        if (inp) inp.focus();
+        const newInput = document.querySelector(`.add-input[data-view="${view}"][data-pid="${pid}"]`);
+        if (newInput) newInput.focus();
       }, 0);
     }
 
@@ -1705,7 +1720,7 @@
 
       if (action === 'add-task') {
         if (e.key === 'Enter') {
-          addTask(e.target.dataset.view);
+          addTask(e.target);
         }
         if (e.key === 'Escape') {
           e.target.value = '';

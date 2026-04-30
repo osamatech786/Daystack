@@ -38,6 +38,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🚀 **Blazing Fast**: Single-page architecture with zero external dependencies.
 - 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars to maximize vertical space.
 - ↕️ **Master Toggle**: Expand or collapse all groups in a tab with a single click.
+- 🧘 **Group Hierarchy**: Distinct, tinted group headers with clear visual separation for better structure.
 
 ## Tabs
 
@@ -140,6 +141,7 @@ Each column has a filter bar above the task list:
 4. Reset `task._undone = false`
 
 ### Add task
+- **Per-Group Entry**: Added directly within each group's expanded list for automatic assignment.
 - From **For Today / In Progress** → `source = 'oneoff'` → gone tomorrow (once done).
 - From **Recurring** → `source = 'daily'` → returns every day.
 - **No duplicate titles** → same title+source combination blocked.
