@@ -1278,6 +1278,10 @@
       // Render Groups
       const projectOrder = ['none', ...state.projects.map(p => p.id)];
       projectOrder.forEach(pid => {
+        const groupTasks = groups[pid] || [];
+        if (selectedProjectId !== 'all' && selectedProjectId !== pid) return;
+        if (selectedProjectId === 'all' && groupTasks.length === 0) return;
+
         let project = state.projects.find(p => p.id === pid);
         if (pid === 'none') {
           project = { id: 'none', title: 'General', collapsed: state.generalCollapsed || {} };
@@ -1285,13 +1289,12 @@
         if (!project) return;
 
         const isCollapsed = project.collapsed && project.collapsed[view];
-        const groupTasks = groups[pid] || [];
 
         const groupHtml = `
           <div class="group-group">
             <div class="group-header ${isCollapsed ? 'collapsed' : ''}" 
                  data-action="toggle-group" data-pid="${pid}" data-view="${view}"
-                 title="Click to expand/collapse this group (or drag tasks here to move them)">
+                 title="Click to expand/collapse this group (Double-click to rename)">
               <i>▾</i> ${esc(project.title)}
               <div class="group-actions">
                 ${pid !== 'none' ? `<button class="group-btn" data-action="delete-group" data-pid="${pid}" title="Delete this group (Tasks will move to General)">×</button>` : ''}
@@ -1338,7 +1341,7 @@
         gBar.innerHTML += `<div class="g-tag ${selectedProjectId === 'none' ? 'active' : ''}" style="padding-right:10px" data-action="filter-group" data-pid="none" title="Show tasks in General (Uncategorized)">General</div>`;
         state.projects.forEach(p => {
           gBar.innerHTML += `
-            <div class="g-tag ${selectedProjectId === p.id ? 'active' : ''}" data-action="filter-group" data-pid="${p.id}" title="Filter by: ${esc(p.title)} (Drag tasks here to move them)">
+            <div class="g-tag ${selectedProjectId === p.id ? 'active' : ''}" data-action="filter-group" data-pid="${p.id}" title="Filter by: ${esc(p.title)} (Double-click to rename)">
               ${esc(p.title)}
               <span class="g-del" data-action="delete-group" data-pid="${p.id}" title="Delete Group">×</span>
             </div>`;
@@ -1409,6 +1412,18 @@
       state.tasks.forEach(t => { if (t.projectId === pid) t.projectId = 'none'; });
       save(state);
       renderAll();
+    }
+
+    function renameGroup(pid) {
+      if (pid === 'none' || pid === 'all') return;
+      const p = state.projects.find(p => p.id === pid);
+      if (!p) return;
+      const newTitle = prompt('Rename group:', p.title);
+      if (newTitle && newTitle.trim() && newTitle.trim() !== p.title) {
+        p.title = newTitle.trim();
+        save(state);
+        renderAll();
+      }
     }
 
     function toggleGroup(pid, view) {
@@ -1636,81 +1651,84 @@
         document.querySelectorAll('.pri-menu').forEach(m => m.classList.remove('show'));
       }
 
-      const action = e.target.dataset.action;
-      if (!action) return;
+      const actionEl = e.target.closest('[data-action]');
+      if (!actionEl) return;
+      const action = actionEl.dataset.action;
 
       if (action === 'task-click') {
-        const tid = e.target.dataset.tid;
-        const view = e.target.dataset.view;
+        const tid = actionEl.dataset.tid;
+        const view = actionEl.dataset.view;
         if (view === 'today') toggleInProgress(tid);
         if (view === 'progress') markDone(tid);
         // recurring tab: task-click does nothing (read-only master list)
       }
 
       else if (action === 'toggle-sub') {
-        const tid = e.target.dataset.tid;
-        const sid = e.target.dataset.sid;
+        const tid = actionEl.dataset.tid;
+        const sid = actionEl.dataset.sid;
         toggleSubtask(tid, sid);
       }
 
       else if (action === 'delete') {
-        const tid = e.target.dataset.tid;
+        const tid = actionEl.dataset.tid;
         deleteTask(tid);
       }
 
       else if (action === 'undo') {
-        const tid = e.target.dataset.tid;
+        const tid = actionEl.dataset.tid;
         undoTask(tid);
       }
 
       else if (action === 'add-sub') {
-        const tid = e.target.dataset.tid;
+        const tid = actionEl.dataset.tid;
         showSubtaskInput(tid);
       }
 
       else if (action === 'toggle-pri') {
-        const tid = e.target.dataset.tid;
-        const view = e.target.dataset.view;
+        const tid = actionEl.dataset.tid;
+        const view = actionEl.dataset.view;
         e.stopPropagation();
         togglePriPicker(tid, view);
       }
 
       else if (action === 'set-pri') {
-        const tid = e.target.dataset.tid;
-        const pri = e.target.dataset.pri;
+        const tid = actionEl.dataset.tid;
+        const pri = actionEl.dataset.pri;
         e.stopPropagation();
         setPri(tid, pri);
       }
 
       else if (action === 'toggle-recurring') {
-        const tid = e.target.dataset.tid;
+        const tid = actionEl.dataset.tid;
         e.stopPropagation();
         toggleRecurring(tid);
       }
 
       else if (action === 'toggle-group') {
-        const pid = e.target.dataset.pid;
-        const view = e.target.dataset.view;
+        if (e.detail === 2) { renameGroup(actionEl.dataset.pid); return; }
+        const pid = actionEl.dataset.pid;
+        const view = actionEl.dataset.view;
         toggleGroup(pid, view);
       }
 
       else if (action === 'filter-group') {
-        selectedProjectId = e.target.dataset.pid;
+        if (e.detail === 2) { renameGroup(actionEl.dataset.pid); return; }
+        selectedProjectId = actionEl.dataset.pid;
         renderAll();
       }
 
       else if (action === 'delete-group') {
         if (confirm('Delete this group? Tasks will move to General.')) {
-          deleteGroup(e.target.dataset.pid);
+          deleteGroup(actionEl.dataset.pid);
         }
       }
 
       else if (action === 'toggle-all-groups') {
-        toggleAllGroups(e.target.dataset.view);
+        toggleAllGroups(actionEl.dataset.view);
       }
 
       else if (action === 'clear-tab') {
-        clearTab(e.target.dataset.view);
+        clearTab(actionEl.dataset.view);
       }
 
     });
@@ -1831,6 +1849,15 @@
           if (ev.key === 'Enter') input.blur();
           if (ev.key === 'Escape') { input.value = oldVal; input.blur(); }
         };
+      }
+
+      // Group Renaming
+      const gHeader = e.target.closest('.group-header');
+      const gTag = e.target.closest('.g-tag');
+      if (gHeader || gTag) {
+        if (e.target.closest('.g-del') || e.target.closest('.group-btn')) return;
+        const el = gHeader || gTag;
+        renameGroup(el.dataset.pid);
       }
     });
 

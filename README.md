@@ -33,7 +33,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🔄 **Smart Reset**: Automatically distinguishes between daily habits and one-off tasks at midnight.
 - 🔁 **Interactive Toggle**: Click the `↻` icon on any task to switch between Recurring and One-off.
 - ⏰ **Reset Countdown**: Live "Next Reset" timer in the header shows exactly when the pool will refresh.
-- ✏️ **Inline Editing**: Double-click any task or subtask to rename it in-place.
+- ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
 - 🌙 **Dark Mode**: Sleek dark theme that persists across sessions.
 - 🚀 **Blazing Fast**: Single-page architecture with zero external dependencies.
 - 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars to maximize vertical space.
@@ -151,9 +151,9 @@ Each column has a filter bar above the task list:
 - Press Escape → closes input without saving
 - Click outside input → closes input
 
-### Edit task/subtask
-- **Double-click** any task or subtask title to edit in-place.
-- Press Enter to save, Esc to cancel.
+### Edit task/subtask/group
+- **Double-click** any task, subtask, or group title to edit in-place.
+- Press Enter to save, Esc to cancel (for tasks/subtasks), or use the prompt for groups.
 
 ### Drag and Drop
 - **Reorder**: Drop a task on another task to change its position.
@@ -221,6 +221,7 @@ Persisted in localStorage key `daystack_theme` (`'light'` | `'dark'`).
 ### Search & Groups
 - Global search bar at the top, integrated with file management utilities.
 - Group bar allows filtering by project/category and includes the daily reset countdown.
+- **Smart Filtering**: In "All" view, empty groups are automatically hidden to maintain minimalism. When a group is selected, the view strictly focuses on that group.
 - Filters tasks and subtasks in real-time across all tabs.
 
 ---
