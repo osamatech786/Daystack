@@ -15,6 +15,7 @@
       --border: #e0e0e0;
       --pri-red: #ef4444;
       --pri-yellow: #eab308;
+      --pri-blue: #3b82f6;
       --pri-green: #22c55e;
       --pri-none: #9ca3af;
       --radius: 6px;
@@ -396,8 +397,8 @@
       background: var(--pri-yellow);
     }
 
-    .pri-green {
-      background: var(--pri-green);
+    .pri-blue {
+      background: var(--pri-blue);
     }
 
     /* Delete btn */
@@ -537,8 +538,8 @@
       color: var(--pri-yellow);
     }
 
-    .pri-opt[data-pri="green"] {
-      color: var(--pri-green);
+    .pri-opt[data-pri="blue"] {
+      color: var(--pri-blue);
     }
 
     /* Subtask inline input */
@@ -701,8 +702,8 @@
       background: var(--pri-yellow);
     }
 
-    .filt-dot.pri-green {
-      background: var(--pri-green);
+    .filt-dot.pri-blue {
+      background: var(--pri-blue);
     }
 
     .sort-btn {
@@ -975,8 +976,8 @@
                 class="filt-dot pri-red"></span></button>
             <button class="filt-btn" data-col="today" data-filt-pri="yellow"><span
                 class="filt-dot pri-yellow"></span></button>
-            <button class="filt-btn" data-col="today" data-filt-pri="green"><span
-                class="filt-dot pri-green"></span></button>
+            <button class="filt-btn" data-col="today" data-filt-pri="blue"><span
+                class="filt-dot pri-blue"></span></button>
             <button class="filt-btn" data-col="today" data-filt-pri="none"><span
                 class="filt-dot pri-none"></span></button>
           </div>
@@ -999,8 +1000,8 @@
                 class="filt-dot pri-red"></span></button>
             <button class="filt-btn" data-col="progress" data-filt-pri="yellow"><span
                 class="filt-dot pri-yellow"></span></button>
-            <button class="filt-btn" data-col="progress" data-filt-pri="green"><span
-                class="filt-dot pri-green"></span></button>
+            <button class="filt-btn" data-col="progress" data-filt-pri="blue"><span
+                class="filt-dot pri-blue"></span></button>
             <button class="filt-btn" data-col="progress" data-filt-pri="none"><span
                 class="filt-dot pri-none"></span></button>
           </div>
@@ -1016,8 +1017,8 @@
             <button class="filt-btn" data-col="done" data-filt-pri="red"><span class="filt-dot pri-red"></span></button>
             <button class="filt-btn" data-col="done" data-filt-pri="yellow"><span
                 class="filt-dot pri-yellow"></span></button>
-            <button class="filt-btn" data-col="done" data-filt-pri="green"><span
-                class="filt-dot pri-green"></span></button>
+            <button class="filt-btn" data-col="done" data-filt-pri="blue"><span
+                class="filt-dot pri-blue"></span></button>
             <button class="filt-btn" data-col="done" data-filt-pri="none"><span
                 class="filt-dot pri-none"></span></button>
           </div>
@@ -1034,8 +1035,8 @@
                 class="filt-dot pri-red"></span></button>
             <button class="filt-btn" data-col="recurring" data-filt-pri="yellow"><span
                 class="filt-dot pri-yellow"></span></button>
-            <button class="filt-btn" data-col="recurring" data-filt-pri="green"><span
-                class="filt-dot pri-green"></span></button>
+            <button class="filt-btn" data-col="recurring" data-filt-pri="blue"><span
+                class="filt-dot pri-blue"></span></button>
             <button class="filt-btn" data-col="recurring" data-filt-pri="none"><span
                 class="filt-dot pri-none"></span></button>
           </div>
@@ -1146,7 +1147,7 @@
       recurring: { pri: 'all', sort: false }
     };
 
-    const PRI_ORDER = { red: 0, yellow: 1, green: 2, none: 3 };
+    const PRI_ORDER = { red: 0, yellow: 1, blue: 2, green: 2, none: 3 };
 
     function applyFilters(tasks, view) {
       const fs = filterState[view];
@@ -1219,7 +1220,7 @@
             <div class="pri-opt" data-action="set-pri" data-tid="${task.id}" data-pri="none">○ none</div>
             <div class="pri-opt" data-action="set-pri" data-tid="${task.id}" data-pri="red">● high</div>
             <div class="pri-opt" data-action="set-pri" data-tid="${task.id}" data-pri="yellow">● medium</div>
-            <div class="pri-opt" data-action="set-pri" data-tid="${task.id}" data-pri="green">● low</div>
+            <div class="pri-opt" data-action="set-pri" data-tid="${task.id}" data-pri="blue">● low</div>
           </div>
         </div>
         <span class="recur-icon ${task.source === 'daily' ? 'is-active' : ''}" 
@@ -1968,7 +1969,7 @@
         const btn = document.getElementById('btn-export');
         const oldText = btn.textContent;
         btn.textContent = 'Saved!';
-        btn.style.borderColor = 'var(--pri-green)';
+        btn.style.borderColor = 'var(--pri-blue)';
         setTimeout(() => {
           btn.textContent = oldText;
           btn.style.borderColor = '';
@@ -2015,7 +2016,7 @@
         const btn = document.getElementById('btn-import');
         const oldText = btn.textContent;
         btn.textContent = 'Loaded!';
-        btn.style.borderColor = 'var(--pri-green)';
+        btn.style.borderColor = 'var(--pri-blue)';
         setTimeout(() => {
           btn.textContent = oldText;
           btn.style.borderColor = '';

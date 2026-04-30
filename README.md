@@ -100,12 +100,12 @@ Task in In Progress = no strikethrough (already in progress, showing in its own 
 Each column has a filter bar above the task list:
 
 ### For Today
-- **Priority filter**: All / red / yellow / green / none
+- **Priority filter**: All / red / yellow / blue / none
 - **Status filter**: All / In Progress (struck) / Not Started (not struck)
-- **Sort**: toggle priority sort (red → yellow → green → none)
+- **Sort**: toggle priority sort (red → yellow → blue → none)
 
 ### In Progress / Done / Recurring
-- **Priority filter**: All / red / yellow / green / none
+- **Priority filter**: All / red / yellow / blue / none
 - **Sort**: toggle priority sort
 
 **Badge counts** show unfiltered total per column.
@@ -187,8 +187,8 @@ Compare `lastActiveDate` vs today's date (`YYYY-MM-DD`):
 
 ## Priority
 
-- Optional per-task: red / yellow / green / none
-- Labels: red=high, yellow=medium, green=low
+- Optional per-task: red / yellow / blue / none
+- Labels: red=high, yellow=medium, blue=low
 - Click color dot → opens priority picker
 - Click outside picker → closes picker
 
@@ -232,7 +232,7 @@ Persisted in localStorage key `daystack_theme` (`'light'` | `'dark'`).
       "id": "string",
       "title": "string",
       "source": "daily" | "oneoff",
-      "priority": "none" | "red" | "yellow" | "green",
+      "priority": "none" | "red" | "yellow" | "blue",
       "subtasks": [
         { "id": "string", "title": "string", "done": boolean }
       ],
