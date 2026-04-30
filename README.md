@@ -156,7 +156,7 @@ Each column has a filter bar above the task list:
 - Press Enter to save, Esc to cancel (for tasks/subtasks), or use the prompt for groups.
 
 ### Drag and Drop
-- **Reorder**: Drop a task on another task to change its position.
+- **Reorder**: Drop a task on another task or a group on another group to change its position.
 - **Move to Group**: Drop a task onto a **Group Header** in a column OR onto a **Group Tag** in the top bar to reassign it.
 
 ### Toggle Recurring

@@ -1863,6 +1863,7 @@
 
     // ── Drag and Drop ───────────────────────────────────────────
     let draggedTaskId = null;
+    let draggedProjectId = null;
 
     function attachDragEvents() {
       // Task drag
@@ -1870,10 +1871,12 @@
         el.draggable = true;
         el.addEventListener('dragstart', e => {
           draggedTaskId = el.dataset.id;
+          draggedProjectId = null;
           el.classList.add('dragging');
           e.dataTransfer.setData('text/plain', draggedTaskId);
         });
         el.addEventListener('dragend', () => {
+          draggedTaskId = null;
           el.classList.remove('dragging');
           document.querySelectorAll('.task, .group-header, .g-tag').forEach(t => t.classList.remove('drag-over'));
         });
@@ -1885,7 +1888,7 @@
         el.addEventListener('drop', e => {
           e.preventDefault();
           const targetId = el.dataset.id;
-          if (draggedTaskId !== targetId) {
+          if (draggedTaskId && draggedTaskId !== targetId) {
             reorderTasks(draggedTaskId, targetId);
           }
         });
@@ -1893,6 +1896,22 @@
 
       // Group drop targets (Headers in columns)
       document.querySelectorAll('.group-header').forEach(el => {
+        const pid = el.dataset.pid;
+        if (pid !== 'none') {
+          el.draggable = true;
+          el.addEventListener('dragstart', e => {
+            draggedProjectId = pid;
+            draggedTaskId = null;
+            el.classList.add('dragging');
+            e.dataTransfer.setData('text/project', pid);
+          });
+          el.addEventListener('dragend', () => {
+            draggedProjectId = null;
+            el.classList.remove('dragging');
+            document.querySelectorAll('.task, .group-header, .g-tag').forEach(t => t.classList.remove('drag-over'));
+          });
+        }
+
         el.addEventListener('dragover', e => {
           e.preventDefault();
           el.classList.add('drag-over');
@@ -1900,13 +1919,34 @@
         el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
         el.addEventListener('drop', e => {
           e.preventDefault();
-          const pid = el.dataset.pid;
-          moveTaskToGroup(draggedTaskId, pid);
+          const targetPid = el.dataset.pid;
+          if (draggedTaskId) {
+            moveTaskToGroup(draggedTaskId, targetPid);
+          } else if (draggedProjectId && draggedProjectId !== targetPid) {
+            if (targetPid === 'none') return;
+            reorderProjects(draggedProjectId, targetPid);
+          }
         });
       });
 
       // Group Tag drop targets (Top bar)
       document.querySelectorAll('.g-tag').forEach(el => {
+        const pid = el.dataset.pid;
+        if (pid !== 'all' && pid !== 'none') {
+          el.draggable = true;
+          el.addEventListener('dragstart', e => {
+            draggedProjectId = pid;
+            draggedTaskId = null;
+            el.classList.add('dragging');
+            e.dataTransfer.setData('text/project', pid);
+          });
+          el.addEventListener('dragend', () => {
+            draggedProjectId = null;
+            el.classList.remove('dragging');
+            document.querySelectorAll('.task, .group-header, .g-tag').forEach(t => t.classList.remove('drag-over'));
+          });
+        }
+
         el.addEventListener('dragover', e => {
           e.preventDefault();
           el.classList.add('drag-over');
@@ -1914,9 +1954,14 @@
         el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
         el.addEventListener('drop', e => {
           e.preventDefault();
-          const pid = el.dataset.pid;
-          if (pid === 'all') return; // Can't move to 'All'
-          moveTaskToGroup(draggedTaskId, pid);
+          const targetPid = el.dataset.pid;
+          if (draggedTaskId) {
+            if (targetPid === 'all') return;
+            moveTaskToGroup(draggedTaskId, targetPid);
+          } else if (draggedProjectId && draggedProjectId !== targetPid) {
+            if (targetPid === 'all' || targetPid === 'none') return;
+            reorderProjects(draggedProjectId, targetPid);
+          }
         });
       });
     }
@@ -1932,8 +1977,19 @@
     function reorderTasks(draggedId, targetId) {
       const draggedIdx = state.tasks.findIndex(t => t.id === draggedId);
       const targetIdx = state.tasks.findIndex(t => t.id === targetId);
+      if (draggedIdx === -1 || targetIdx === -1) return;
       const [movedTask] = state.tasks.splice(draggedIdx, 1);
       state.tasks.splice(targetIdx, 0, movedTask);
+      save(state);
+      renderAll();
+    }
+
+    function reorderProjects(draggedPid, targetPid) {
+      const draggedIdx = state.projects.findIndex(p => p.id === draggedPid);
+      const targetIdx = state.projects.findIndex(p => p.id === targetPid);
+      if (draggedIdx === -1 || targetIdx === -1) return;
+      const [movedProject] = state.projects.splice(draggedIdx, 1);
+      state.projects.splice(targetIdx, 0, movedProject);
       save(state);
       renderAll();
     }
