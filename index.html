@@ -2127,10 +2127,14 @@
     // Mobile Support: Long Press & Double Tap
     let lastTap = 0;
     let longPressTimer = null;
+    let touchStartPos = { x: 0, y: 0 };
 
     document.addEventListener('touchstart', e => {
       const target = e.target.closest('.task-title, .subtask-title, .group-header, .g-tag');
       if (!target) return;
+
+      const touch = e.touches[0];
+      touchStartPos = { x: touch.clientX, y: touch.clientY };
 
       // Double Tap detection
       const now = Date.now();
@@ -2138,24 +2142,38 @@
       if (now - lastTap < TIMESPAN) {
         clearTimeout(longPressTimer);
         triggerRename(target);
-        e.preventDefault(); // Prevent zoom/default
+        e.preventDefault(); 
         return;
       }
       lastTap = now;
 
-      // Long Press detection
+      // Long Press detection (1s to avoid conflict with Drag & Drop)
       longPressTimer = setTimeout(() => {
         triggerRename(target);
-        if (window.navigator.vibrate) window.navigator.vibrate(50); // Haptic feedback
-      }, 600);
+        if (window.navigator.vibrate) window.navigator.vibrate(50); 
+      }, 1000);
     }, { passive: false });
 
     document.addEventListener('touchend', () => {
       clearTimeout(longPressTimer);
     });
 
-    document.addEventListener('touchmove', () => {
+    document.addEventListener('touchmove', e => {
+      if (!longPressTimer) return;
+      const touch = e.touches[0];
+      const dx = Math.abs(touch.clientX - touchStartPos.x);
+      const dy = Math.abs(touch.clientY - touchStartPos.y);
+      // If moved more than 8px, cancel the rename (it's a drag or scroll)
+      if (dx > 8 || dy > 8) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    });
+
+    // Also cancel rename timer if a drag actually starts
+    document.addEventListener('dragstart', () => {
       clearTimeout(longPressTimer);
+      longPressTimer = null;
     });
 
     // ── Drag and Drop ───────────────────────────────────────────
