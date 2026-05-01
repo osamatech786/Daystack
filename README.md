@@ -39,6 +39,8 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars to maximize vertical space.
 - ↕️ **Master Toggle**: Expand or collapse all groups in a tab with a single click.
 - 🧘 **Group Hierarchy**: Distinct, tinted group headers with clear visual separation for better structure.
+- ✨ **Interactive Onboarding**: New users are guided by a premium, glassmorphic tour that highlights core features and helps create the first task.
+- 📱 **Touch Gestures**: Full mobile support for renaming via **Double-Tap** or **Long-Press** on any task or group.
 
 ## Tabs
 
@@ -152,8 +154,9 @@ Each column has a filter bar above the task list:
 - Click outside input → closes input
 
 ### Edit task/subtask/group
-- **Double-click** any task, subtask, or group title to edit in-place.
-- Press Enter to save, Esc to cancel (for tasks/subtasks), or use the prompt for groups.
+- **Double-click** (Desktop) any task, subtask, or group title to edit in-place.
+- **Double-tap** or **Long-press** (Mobile) to initiate editing on touch devices.
+- Press Enter to save, Esc to cancel.
 
 ### Drag and Drop
 - **Reorder**: Drop a task on another task, a group on another group, or a subtask on another subtask to change its position.
@@ -268,6 +271,8 @@ Persisted in localStorage key `daystack_theme` (`'light'` | `'dark'`).
 - Filter labels hidden on mobile
 - Undo button always visible (no hover on mobile)
 - Larger touch targets on inputs and task rows
+- **Touch Gestures**: Double-tap or Long-press to rename tasks, subtasks, and groups.
+- Haptic feedback (vibration) on long-press rename activation.
 
 ---
 

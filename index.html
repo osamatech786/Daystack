@@ -2075,10 +2075,9 @@
       renderAll();
     });
 
-    // Inline Editing (Double Click)
-    document.addEventListener('dblclick', e => {
-      if (e.target.classList.contains('task-title')) {
-        const span = e.target;
+    function triggerRename(target) {
+      if (target.classList.contains('task-title')) {
+        const span = target;
         const tid = span.dataset.tid;
         const oldVal = span.textContent;
         const input = document.createElement('input');
@@ -2092,8 +2091,8 @@
           if (ev.key === 'Escape') { input.value = oldVal; input.blur(); }
         };
       }
-      if (e.target.classList.contains('subtask-title')) {
-        const span = e.target;
+      else if (target.classList.contains('subtask-title')) {
+        const span = target;
         const row = span.closest('.subtask-row');
         const sid = row.dataset.subid;
         const tid = span.closest('.task').dataset.id;
@@ -2109,15 +2108,54 @@
           if (ev.key === 'Escape') { input.value = oldVal; input.blur(); }
         };
       }
-
-      // Group Renaming
-      const gHeader = e.target.closest('.group-header');
-      const gTag = e.target.closest('.g-tag');
-      if (gHeader || gTag) {
-        if (e.target.closest('.g-del') || e.target.closest('.group-btn')) return;
-        const el = gHeader || gTag;
-        renameGroup(el.dataset.pid);
+      else {
+        const gHeader = target.closest('.group-header');
+        const gTag = target.closest('.g-tag');
+        if (gHeader || gTag) {
+          if (target.closest('.g-del') || target.closest('.group-btn')) return;
+          const el = gHeader || gTag;
+          renameGroup(el.dataset.pid);
+        }
       }
+    }
+
+    // Inline Editing (Double Click)
+    document.addEventListener('dblclick', e => {
+      triggerRename(e.target);
+    });
+
+    // Mobile Support: Long Press & Double Tap
+    let lastTap = 0;
+    let longPressTimer = null;
+
+    document.addEventListener('touchstart', e => {
+      const target = e.target.closest('.task-title, .subtask-title, .group-header, .g-tag');
+      if (!target) return;
+
+      // Double Tap detection
+      const now = Date.now();
+      const TIMESPAN = 300;
+      if (now - lastTap < TIMESPAN) {
+        clearTimeout(longPressTimer);
+        triggerRename(target);
+        e.preventDefault(); // Prevent zoom/default
+        return;
+      }
+      lastTap = now;
+
+      // Long Press detection
+      longPressTimer = setTimeout(() => {
+        triggerRename(target);
+        if (window.navigator.vibrate) window.navigator.vibrate(50); // Haptic feedback
+      }, 600);
+    }, { passive: false });
+
+    document.addEventListener('touchend', () => {
+      clearTimeout(longPressTimer);
+    });
+
+    document.addEventListener('touchmove', () => {
+      clearTimeout(longPressTimer);
     });
 
     // ── Drag and Drop ───────────────────────────────────────────
