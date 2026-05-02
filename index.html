@@ -2039,7 +2039,8 @@
         cloudAutoSync: true,
         cloudSyncFreq: 0, // 0 for instant
         cloudRefreshOnReset: false,
-        cloudLastSync: ''
+        cloudLastSync: '',
+        gistIdToDelete: ''
       };
 
       data.settings = { ...defaultSettings, ...(data.settings || {}) };
@@ -2068,7 +2069,9 @@
             return t;
           });
         if (data.settings.cloudSync && data.settings.cloudRefreshOnReset && data.settings.cloudGistId) {
-          deleteGist(data.settings.cloudToken, data.settings.cloudGistId);
+          // Mark for deletion but don't delete yet. 
+          // We wait for a successful new sync first.
+          data.settings.gistIdToDelete = data.settings.cloudGistId;
           data.settings.cloudGistId = '';
         }
         data.lastActiveDate = currentCycleDate;
@@ -2113,7 +2116,7 @@
       }
     }
 
-    async function discoverGist(token) {
+    async function discoverGist(token, excludeId = null) {
       try {
         const response = await fetch('https://api.github.com/gists', {
           headers: {
@@ -2123,10 +2126,11 @@
         });
         if (!response.ok) return null;
         const gists = await response.json();
-        // Look for our specific backup Gist by description or filename
+        // Look for our specific backup Gist, excluding the one marked for deletion
         const found = gists.find(g =>
-          g.description === 'Daystack Data Backup' ||
-          (g.files && g.files['daystack-data.json'])
+          (g.description === 'Daystack Data Backup' ||
+          (g.files && g.files['daystack-data.json'])) &&
+          g.id !== excludeId
         );
         return found ? found.id : null;
       } catch (e) {
@@ -2185,7 +2189,7 @@
       // Auto-Discovery: If no ID, try to find an existing Daystack gist
       if (!gistId) {
         updateCloudStatus('Discovering...', 'syncing');
-        gistId = await discoverGist(token);
+        gistId = await discoverGist(token, state.settings.gistIdToDelete);
         if (gistId) {
           state.settings.cloudGistId = gistId;
           const gistInput = document.getElementById('set-cloud-gist-id');
@@ -2255,8 +2259,18 @@
         window._lastCloudSync = new Date();
         isCloudDirty = false;
         updateCloudStatus('Synced', 'cloud-success');
+
+        // Safety Cleanup: If we were waiting to delete an old Gist (from a reset), do it now.
+        if (state.settings.gistIdToDelete) {
+          const oldId = state.settings.gistIdToDelete;
+          state.settings.gistIdToDelete = ''; // Clear it first to avoid retry loops
+          deleteGist(token, oldId);
+          save(state, true, true);
+        }
       } catch (err) {
         console.error('Cloud Sync Error:', err);
+        // If we failed to sync, but we have a pending deletion, 
+        // we leave gistIdToDelete as is so we can try again later.
         updateCloudStatus('Error: ' + err.message, 'cloud-error');
       }
     }
@@ -2272,7 +2286,7 @@
 
       if (!gistId) {
         if (!isAuto) updateCloudStatus('Discovering...', 'syncing');
-        gistId = await discoverGist(token);
+        gistId = await discoverGist(token, state.settings.gistIdToDelete);
         if (gistId) {
           state.settings.cloudGistId = gistId;
           const gistInput = document.getElementById('set-cloud-gist-id');
@@ -3253,7 +3267,9 @@
         const gistId = (state.settings.cloudGistId || '').trim();
         if (token && gistId) {
           updateCloudStatus('Resetting Gist...', 'syncing');
-          await deleteGist(token, gistId);
+          // Safer approach: Mark for deletion and force a fresh sync.
+          // The old one will be deleted automatically once the new one is verified.
+          state.settings.gistIdToDelete = gistId;
           state.settings.cloudGistId = '';
           const gistInput = document.getElementById('set-cloud-gist-id');
           if (gistInput) gistInput.value = '';
