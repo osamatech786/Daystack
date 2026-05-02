@@ -60,17 +60,19 @@
     }
 
     @keyframes pulse {
-      0% {
-        opacity: 0.4;
-      }
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
 
-      50% {
-        opacity: 1;
-      }
+    @keyframes zenBreath {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
 
-      100% {
-        opacity: 0.4;
-      }
+    .zen-mode .zen-element {
+      animation: zenBreath 8s ease-in-out infinite;
+      display: inline-block;
     }
 
     html,
@@ -1165,6 +1167,161 @@
       opacity: 0.6;
       margin-bottom: 20px;
     }
+
+    /* Settings Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      color: var(--text);
+      padding: 32px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 95%;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-card h2 {
+      margin-bottom: 24px;
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .settings-section {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-section:last-child {
+      border-bottom: none;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .settings-info {
+      flex: 1;
+    }
+
+    .settings-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .settings-desc {
+      font-size: 11px;
+      opacity: 0.5;
+    }
+
+    /* Premium Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border);
+      transition: .4s;
+      border-radius: 20px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--pri-green);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    .settings-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      width: 60px;
+    }
+
+    .modal-close {
+      margin-top: 16px;
+      width: 100%;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Pulsing Save Button */
+    @keyframes savePulse {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    .save-pulse {
+      animation: savePulse 2s infinite;
+    }
   </style>
 </head>
 
@@ -1189,7 +1346,8 @@
           </div>
           <button class="file-btn" id="btn-import">Load</button>
           <input type="file" id="file-import" accept=".json" style="display:none">
-          <button class="file-btn" id="btn-theme" title="Toggle dark mode">☀</button>
+          <button class="file-btn" id="btn-theme" title="Toggle theme">☀</button>
+          <button class="file-btn" id="btn-settings" title="Open Settings">⚙</button>
         </div>
       </div>
 
@@ -1351,6 +1509,22 @@
       if (!data.tasks) data.tasks = [];
       if (!data.projects) data.projects = [];
       if (!data.lastActiveDate) data.lastActiveDate = today();
+      
+      // Default Settings
+      const defaultSettings = {
+        theme: 'dynamic',
+        zenBreath: true,
+        nightShift: true,
+        resetTime: '00:00',
+        autoSave: true,
+        autoSaveFreq: 10,
+        savePulse: true,
+        focusPings: false,
+        focusFreq: 25,
+        notifications: false
+      };
+      
+      data.settings = { ...defaultSettings, ...(data.settings || {}) };
 
       return performDailyReset(data);
     }
@@ -1602,7 +1776,19 @@
       renderCol('done', t => t._done);
       renderCol('recurring', t => t.source === 'daily');
       updateTabs(state.tasks);
+      updateZenBreath();
+      applyTheme();
       attachDragEvents();
+    }
+
+    function updateZenBreath() {
+      const isEnabled = state.settings.zenBreath;
+      document.body.classList.toggle('zen-mode', isEnabled);
+      if (isEnabled) {
+        document.getElementById('reset-timer').classList.add('zen-element');
+      } else {
+        document.getElementById('reset-timer').classList.remove('zen-element');
+      }
     }
 
     function updateTabs(tasks) {
@@ -2051,27 +2237,71 @@
       });
     });
 
-    // ── Boot ────────────────────────────────────────────────────
-    // Theme: restore from localStorage
-    const savedTheme = localStorage.getItem('daystack_theme');
-    if (savedTheme === 'dark') {
-      document.documentElement.dataset.theme = 'dark';
-      document.getElementById('btn-theme').textContent = '☾';
+    // ── Settings & Theme ─────────────────────────────────────────
+    function applyTheme() {
+      const theme = state.settings.theme;
+      const btn = document.getElementById('btn-theme');
+      
+      if (theme === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+        btn.textContent = '☾';
+      } else if (theme === 'light') {
+        delete document.documentElement.dataset.theme;
+        btn.textContent = '☀';
+      } else {
+        // Dynamic Theme
+        const hour = new Date().getHours();
+        const isDark = hour < 6 || hour >= 18;
+        if (isDark) document.documentElement.dataset.theme = 'dark';
+        else delete document.documentElement.dataset.theme;
+        btn.textContent = '🌓';
+      }
     }
 
     document.getElementById('btn-theme').addEventListener('click', () => {
-      const btn = document.getElementById('btn-theme');
-      const isDark = document.documentElement.dataset.theme === 'dark';
-      if (isDark) {
-        delete document.documentElement.dataset.theme;
-        btn.textContent = '☀';
-        localStorage.setItem('daystack_theme', 'light');
-      } else {
-        document.documentElement.dataset.theme = 'dark';
-        btn.textContent = '☾';
-        localStorage.setItem('daystack_theme', 'dark');
-      }
+      const themes = ['dynamic', 'light', 'dark'];
+      let currentIdx = themes.indexOf(state.settings.theme || 'dynamic');
+      state.settings.theme = themes[(currentIdx + 1) % themes.length];
+      save(state);
+      applyTheme();
     });
+
+    function toggleSettings() {
+      const overlay = document.getElementById('settings-overlay');
+      const isShowing = overlay.classList.contains('show');
+      
+      if (!isShowing) {
+        // Fill inputs from state
+        document.getElementById('set-zen-breath').checked = state.settings.zenBreath;
+        document.getElementById('set-night-shift').checked = state.settings.nightShift;
+        document.getElementById('set-auto-save').checked = state.settings.autoSave;
+        document.getElementById('set-auto-save-freq').value = state.settings.autoSaveFreq;
+        document.getElementById('set-save-pulse').checked = state.settings.savePulse;
+        document.getElementById('set-focus-pings').checked = state.settings.focusPings;
+        document.getElementById('set-focus-freq').value = state.settings.focusFreq;
+        document.getElementById('set-notifications').checked = state.settings.notifications;
+        document.getElementById('set-reset-time').value = state.settings.resetTime;
+        
+        overlay.classList.add('show');
+      } else {
+        // Save inputs to state
+        state.settings.zenBreath = document.getElementById('set-zen-breath').checked;
+        state.settings.nightShift = document.getElementById('set-night-shift').checked;
+        state.settings.autoSave = document.getElementById('set-auto-save').checked;
+        state.settings.autoSaveFreq = parseInt(document.getElementById('set-auto-save-freq').value) || 10;
+        state.settings.savePulse = document.getElementById('set-save-pulse').checked;
+        state.settings.focusPings = document.getElementById('set-focus-pings').checked;
+        state.settings.focusFreq = parseInt(document.getElementById('set-focus-freq').value) || 25;
+        state.settings.notifications = document.getElementById('set-notifications').checked;
+        state.settings.resetTime = document.getElementById('set-reset-time').value || '00:00';
+        
+        overlay.classList.remove('show');
+        save(state);
+        renderAll();
+      }
+    }
+
+    document.getElementById('btn-settings').addEventListener('click', toggleSettings);
 
     // Search input handler
     document.getElementById('search-tasks').addEventListener('input', e => {
@@ -2393,13 +2623,7 @@
           }
         }
       } catch (e) { }
-
-      // Theme
-      const savedTheme = localStorage.getItem('daystack_theme');
-      if (savedTheme === 'dark') {
-        document.documentElement.dataset.theme = 'dark';
-        document.getElementById('btn-theme').textContent = '☾';
-      }
+      // Settings restore (handled by load())
       renderAll();
       checkOnboarding();
     })();
@@ -2555,6 +2779,7 @@
         state.tasks = imported.tasks || [];
         state.projects = imported.projects || [];
         state.generalCollapsed = imported.generalCollapsed || {};
+        state.settings = { ...state.settings, ...(imported.settings || {}) };
         state.lastActiveDate = imported.lastActiveDate || today();
         performDailyReset(state);
         save(state);
@@ -2606,6 +2831,7 @@
           state.tasks = imported.tasks || [];
           state.projects = imported.projects || [];
           state.generalCollapsed = imported.generalCollapsed || {};
+          state.settings = { ...state.settings, ...(imported.settings || {}) };
           state.lastActiveDate = imported.lastActiveDate || today();
           performDailyReset(state);
           save(state);

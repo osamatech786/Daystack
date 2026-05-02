@@ -33,8 +33,11 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🔄 **Smart Reset**: Automatically distinguishes between daily habits and one-off tasks. Now operates in real-time (no refresh needed at midnight) and intelligently refreshes imported legacy data.
 - 🔁 **Interactive Toggle**: Click the `↻` icon on any task to switch between Recurring and One-off.
 - ⏰ **Reset Countdown**: Live "Next Reset" timer in the header shows exactly when the pool will refresh.
-- ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
+- 🧘 **Zen Breath**: Interface elements subtly breathe to feel alive (Toggleable in Settings).
 - 🌙 **Dark Mode**: Sleek dark theme that persists across sessions.
+- 🌓 **Dynamic Theme**: Automatically switches between light and dark mode based on the time of day (Default).
+- ⚙️ **Settings Modal**: Premium glassmorphic panel to control all app behaviors.
+- ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
 - 🚀 **Blazing Fast**: Single-page architecture with zero external dependencies.
 - 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars to maximize vertical space.
 - ↕️ **Master Toggle**: Expand or collapse all groups in a tab with a single click.
@@ -204,10 +207,23 @@ The app compares `lastActiveDate` vs today's date (`YYYY-MM-DD`) and triggers a 
 
 ---
 
-## Dark Mode
+### Dynamic Theme
+Toggle button (☀/🌓/☾) in header.
+- **Dynamic** (🌓): Automatically switches (Dark between 6 PM - 6 AM, Light otherwise).
+- **Light** (☀): Forced light theme.
+- **Dark** (☾): Forced dark theme.
+Persisted in the `settings` object.
 
-Toggle button (☀/☾) in header, next to Save/Load.
-Persisted in localStorage key `daystack_theme` (`'light'` | `'dark'`).
+---
+
+## Settings Modal
+Accessed via the ⚙️ icon. Controls:
+- **Zen Breath**: Toggle rhythmic UI breathing.
+- **Night Shift**: Toggle late-night task dimming.
+- **Auto-Save**: Toggle periodic disk syncing (10m default).
+- **Save Pulse**: Visual reminder for unsaved changes.
+- **Focus Pings**: Pomodoro-style reminders.
+- **Reset Time**: Customizable daily refresh time.
 
 ---
 
