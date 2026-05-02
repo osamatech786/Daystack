@@ -1718,10 +1718,9 @@
             <input type="text" id="set-cloud-gist-id" class="settings-input token-input" placeholder="Auto-created if empty">
             <div class="sync-hint">Leave empty to create a new one.</div>
           </div>
-          <div class="settings-row">
             <div class="settings-info">
               <div class="settings-label">Cloud Sync Frequency</div>
-              <div class="settings-desc">Minutes between cloud syncs (0 = Sync Instant).</div>
+              <div class="settings-desc">Minutes between cloud syncs (0 = Sync Instant). <b>Intelligently skips if no changes detected.</b></div>
             </div>
             <input type="number" id="set-cloud-sync-freq" class="settings-input" min="0" max="60">
           </div>
@@ -1760,6 +1759,7 @@
     const today = () => getCycleDate(); // Default calendar date for simple checks
     let fileHandle = null;
     let isDirty = false;
+    let isCloudDirty = false;
     let searchQuery = '';
     let selectedProjectId = 'all';
 
@@ -1859,6 +1859,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       if (!isSilent) {
         isDirty = true;
+        isCloudDirty = true;
         document.getElementById('save-dirty').classList.add('show');
         if (state.settings.savePulse) {
           document.getElementById('btn-export').classList.add('save-pulse');
@@ -1909,6 +1910,7 @@
     // ── Cloud Sync (GitHub Gist) ──────────────────────────────
     async function syncToCloud(force = false) {
       if (!state.settings.cloudSync && !force) return;
+      if (!isCloudDirty && !force) return;
       const token = (state.settings.cloudToken || '').trim();
       if (!token) {
         updateCloudStatus('Error: No Token', 'cloud-error');
@@ -1996,6 +1998,7 @@
         
         save(state, true, true); // skipCloud to avoid loop, silent to avoid dirtying UI
         window._lastCloudSync = new Date();
+        isCloudDirty = false;
         updateCloudStatus('Synced', 'cloud-success');
       } catch (err) {
         console.error('Cloud Sync Error:', err);
@@ -2059,6 +2062,7 @@
         
         performDailyReset(state);
         save(state);
+        isCloudDirty = false;
         renderAll();
         
         updateCloudStatus('Restored', 'cloud-success');
@@ -3328,7 +3332,7 @@
       }
 
       // Cloud auto-sync logic (periodic)
-      if (state.settings.cloudSync && state.settings.cloudAutoSync && state.settings.cloudSyncFreq > 0) {
+      if (state.settings.cloudSync && state.settings.cloudAutoSync && state.settings.cloudSyncFreq > 0 && isCloudDirty) {
         if (!window._lastCloudSync) window._lastCloudSync = now;
         const diffMins = (now - window._lastCloudSync) / 1000 / 60;
         if (diffMins >= state.settings.cloudSyncFreq) {

@@ -166,7 +166,7 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 - **Zen Breath**: Synchronizes the meditative UI pulse.
 - **Auto-Save**: Manages background disk syncing.
 - **Focus Pings**: Triggers periodic visual nudges.
-- **Cloud Sync**: Checks for remote updates every minute.
+- **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed).
 
 ### Settings Modal
 Accessed via the ⚙️ icon. Controls:
