@@ -36,7 +36,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🧘 **Zen Breath**: Subtle, rhythmic UI pulse on the timer and active tab to make the app feel alive.
 - 🌙 **Dark Mode**: Sleek dark theme that persists across sessions.
 - 🌓 **Dynamic Theme**: Automatically switches between light and dark mode based on the time of day (Default).
-- ⚙️ **Settings Modal**: Premium glassmorphic panel to control all app behaviors.
+- ⚙️ **Settings Modal**: Redesigned premium glassmorphic panel with sticky navigation and enhanced aesthetics for effortless control.
 - ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
 - ☁️ **Interactive Cloud**: Click/Touch the cloud icon in the header to trigger an instant sync (or as a shortcut to Cloud Settings).
 - 🚀 **Blazing Fast**: Single-page architecture with zero external dependencies.
