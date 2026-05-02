@@ -113,214 +113,88 @@ Each column has a filter bar above the task list:
 
 ### In Progress / Done / Recurring
 - **Priority filter**: All / red / yellow / blue / none
-- **Sort**: toggle priority sort
-
-**Badge counts** show unfiltered total per column.
-
----
-
-## Interactions
-
-### Click task in For Today
-1. Set `task._struck = true`
-2. Task remains visible with strikethrough in For Today
-3. Task also appears in In Progress
-4. localStorage saved
-
-### Click task title in In Progress
-1. Set `task._done = true`
-2. Task moves to Done tab
-
-### Click subtask checkbox (any column)
-1. Toggle `subtask.done`
-2. If ALL subtasks done → `task._done = true`, `task._struck = false`
-
-### Delete task/subtask (× button)
-1. Remove task or subtask from `state.tasks`
-2. localStorage saved
-3. If task was struck → won't return tomorrow
-
-### Undo (Done tab)
-1. Reset `task._done = false`
-2. Restore `task._struck = true` → task returns to In Progress
-3. Reset all `subtask.done = false`
-4. Reset `task._undone = false`
-
-### Add task
-- **Per-Group Entry**: Added directly within each group's expanded list for automatic assignment.
-- From **For Today / In Progress** → `source = 'oneoff'` → gone tomorrow (once done).
-- From **Recurring** → `source = 'daily'` → returns every day.
-- **No duplicate titles** → same title+source combination blocked.
-
-### Add subtask
-- Press Enter → saves subtask → new empty subtask input auto-opens and focuses
-- Press Escape → closes input without saving
-- Click outside input → closes input
-
-### Edit task/subtask/group
-- **Double-click** (Desktop) any task, subtask, or group title to edit in-place.
-- **Double-tap** or **Long-press** (Mobile) to initiate editing on touch devices.
-- Press Enter to save, Esc to cancel.
-
-### Drag and Drop
-- **Reorder**: Drop a task on another task, a group on another group, or a subtask on another subtask to change its position.
-- **Move to Group**: Drop a task onto a **Group Header** in a column OR onto a **Group Tag** in the top bar to reassign it.
-
-### Toggle Recurring
-- Click the `↻` icon to swap between **Recurring** (green) and **One-off** (grey).
-- Recurring tasks return tomorrow; One-off tasks are deleted once done.
-
-### Clear all (per column)
-- **For Today**: Deletes all active (not-done) tasks from the list.
-- **In Progress**: Un-strikes all tasks (moves them back to For Today).
-- **Done**: Deletes all completed tasks permanently.
-- **Recurring**: Deletes all daily tasks from the master pool.
+- **Zen Breath**: Interface elements subtly breathe to feel alive.
+- **Cloud Backup & Sync**: Free, user-controlled cloud backup via GitHub Gists.
+- **Radical Portability**: Export/Import your entire state as a single JSON file.
 
 ---
 
-## The Heartbeat 💓
+## ☁️ Cloud Sync & Security
 
-Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most intelligent features without sacrificing performance:
+Daystack offers a free, user-controlled cloud backup using GitHub Gists.
 
-- **Real-time Reset**: Detects midnight transitions instantly while the app is open.
+### 🛡️ Security First
+Your GitHub Token is stored only in your browser's local storage and is protected by the **Same-Origin Policy**, meaning other websites cannot access it. 
+
+**Best Practice**: We strongly recommend using a **Fine-grained Personal Access Token** limited ONLY to "Gists" (read/write). This ensures that even if the token were compromised, an attacker would have NO access to your repositories, private code, or account settings.
+
+### 📖 Cloud Sync Setup Guide
+
+To enable cross-device sync, follow these steps:
+
+#### 1. Generate a GitHub Token
+1. Go to your GitHub [Personal Access Tokens](https://github.com/settings/tokens?type=beta) (Fine-grained).
+2. Click **Generate new token**.
+3. **Name**: `Daystack Sync`.
+4. **Expiration**: Choose "No expiration" (or your preference).
+5. **Permissions**: 
+   - Click **Account permissions**.
+   - Find **Gists** and select **Access: Read and write**.
+6. Click **Generate token** and copy the code starting with `github_pat_`.
+
+#### 2. Configure Daystack
+1. Open Daystack **Settings** (⚙ icon).
+2. Enable **Cloud Backup & Sync**.
+3. Paste your **GitHub Token**.
+4. **Gist ID**: Leave this **blank** if it's your first time. Daystack will automatically create a secret Gist for you and fill this ID in. 
+   - *Note: If you are setting up a second device, paste the Gist ID from your first device here.*
+5. Click **Close & Apply**.
+
+---
+
+## 🛠️ Features Deep-Dive
+
+### The Heartbeat 💓
+Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most intelligent features:
+- **Real-time Reset**: Detects midnight transitions instantly.
 - **Zen Breath**: Synchronizes the meditative UI pulse.
 - **Auto-Save**: Manages background disk syncing.
-- **Focus Pings**: Triggers periodic visual and notification nudges.
+- **Focus Pings**: Triggers periodic visual nudges.
+- **Cloud Sync**: Checks for remote updates every minute.
 
----
-
-## Daily Reset (Intelligent)
-
-The app compares `lastActiveDate` vs today's date (`YYYY-MM-DD`) and triggers a reset in three scenarios:
-1. **On Page Load**: Standard boot-up check (respects your custom `resetTime` threshold).
-2. **During Focus (Real-time)**: If the app is left open, a periodic check (every 60s) detects when the `resetTime` threshold is crossed and refreshes the pool instantly.
-3. **On Import**: Loading a file from a previous cycle automatically triggers a reset for today's context.
-
-### Reset Rules:
-
-1. **Recurring tasks** (`source === 'daily'`):
-   - `_struck = false`
-   - `_done = false`
-   - all `subtask.done = false`
-2. **One-off tasks** (`source === 'oneoff'`):
-   - If `_done === true` → **Deleted** (disappears from Done).
-   - If `_done === false` → **Persists** (stays in Tasks/In Progress).
-3. Update `lastActiveDate = today()`
-4. Save to localStorage
-
----
-
-## Priority
-
-- Optional per-task: red / yellow / blue / none
-- Labels: red=high, yellow=medium, blue=low
-- Click color dot → opens priority picker
-- Click outside picker → closes picker
-
----
-
-### Dynamic Theme
-Toggle button (☀/🌓/☾) in header.
-- **Dynamic** (🌓): Automatically switches (Dark between 6 PM - 6 AM, Light otherwise).
-- **Light** (☀): Forced light theme.
-- **Dark** (☾): Forced dark theme.
-Persisted in the `settings` object.
-
----
-
-## Settings Modal
+### Settings Modal
 Accessed via the ⚙️ icon. Controls:
-- **Zen Breath**: Toggle rhythmic UI breathing on the timer and active tab.
-- **Night Shift**: Automatically dims tasks that are NOT "In Progress" late at night (10 PM - 5 AM) for extreme focus.
-- **Auto-Save**: Periodically syncs changes to your active disk file (default 10m).
-- **Save Pulse**: The Save button gently glows blue when you have unsaved changes.
-- **Focus Pings**: Periodic green glow/pulse on your "In Progress" tasks to keep you on track.
-- **Browser Notifications**: Native desktop alerts for focus pings.
-- **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM for night owls). The app maintains "Focus Day" integrity, meaning it won't reset until this threshold is reached, even if you refresh the page after midnight.
+- **Zen Breath**: Toggle rhythmic UI breathing.
+- **Night Shift**: Dims inactive tasks late at night (10 PM - 5 AM).
+- **Auto-Save**: Periodically syncs to your disk file.
+- **Focus Pings**: Periodic glow on active tasks.
+- **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM).
+
+### Persistence & Portability
+- **Native File Sync**: Use the File System Access API to save directly to your computer.
+- **Cloud Backup**: Integrated GitHub Gist sync.
+- **JSON Export**: One-click backup of your entire focus state.
 
 ---
 
-## Persistence
-
-- **Tasks**: localStorage key `taskTracker_v1`
-- **Theme**: localStorage key `daystack_theme`
-- Auto-saves after every action
-
-### Export/Import (File System Access API)
-- **Save** → Overwrites current file if one is active, otherwise opens a picker.
-- **Load** → File picker → Imports from JSON and sets as active file.
-- **Save As** → Right-click the **Save** button to choose a new location.
-- **Persistence** → The active file handle is saved in **IndexedDB**, allowing saves to work across page refreshes.
-- **Unsaved Indicator** → A red dot appears on the Save button when local changes haven't been written to the file.
-- **Visual Feedback** → Buttons briefly change to "Saved!" or "Loaded!" on success.
-- **Fallback** → Automatically uses standard download/upload in non-supported browsers.
-
-### Search & Groups
-- Global search bar at the top, integrated with file management utilities.
-- Group bar allows filtering by project/category and includes the daily reset countdown.
-- **Smart Filtering**: In "All" view, empty groups are automatically hidden to maintain minimalism. When a group is selected, the view strictly focuses on that group.
-- Filters tasks and subtasks in real-time across all tabs.
+## ⌨️ Keyboard Shortcuts
+- `Ctrl + S`: Save instantly to disk.
+- `Alt + 1-4`: Switch tabs (Today, Progress, Done, Recurring).
+- `Enter`: Confirm task/subtask.
+- `Esc`: Cancel/Close inputs.
 
 ---
 
-## Data Model
-
-```json
-{
-  "tasks": [
-    {
-      "id": "string",
-      "title": "string",
-      "source": "daily" | "oneoff",
-      "priority": "none" | "red" | "yellow" | "blue",
-      "subtasks": [
-        { "id": "string", "title": "string", "done": boolean }
-      ],
-      "createdAt": "ISO date",
-      "_struck": boolean,
-      "_done": boolean,
-      "_undone": boolean
-    }
-  ],
-  "lastActiveDate": "YYYY-MM-DD"
-}
-```
+## 📱 Mobile Support
+- Double-tap or Long-press to rename tasks and groups.
+- Haptic feedback on touch interaction.
+- Responsive layout optimized for one-handed use.
 
 ---
 
-## Keyboard
-
-- **Add task input**: Enter to confirm, Esc to cancel
-- **Subtask input**: Enter to save and open new input, Esc to cancel/close
-- **Shortcuts**: 
-  - `Ctrl+S` (or `Cmd+S`) to save instantly to the active file.
-  - `Alt + 1` through `Alt + 4` to switch between tabs (Today, Progress, Done, Recurring).
+## 🏗️ Technical Details
+For information on the **Data Model**, **Internal Logic**, and **Reset Rules**, please see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ---
-
-## Responsive (Mobile)
-
-- Header stacks vertically (tabs on top, file buttons below)
-- Tab bar horizontally scrollable with snap
-- Filter labels hidden on mobile
-- Undo button always visible (no hover on mobile)
-- Larger touch targets on inputs and task rows
-- **Touch Gestures**: Double-tap or Long-press to rename tasks, subtasks, and groups.
-- Haptic feedback (vibration) on long-press rename activation.
-
----
-
-## Edge Cases
-
-- Empty columns → show "No tasks here yet" placeholder
-- Subtask-only done → parent moves to Done
-- Undo restores task to In Progress (not For Today)
-- No subtasks → clicking task in In Progress → moves to Done
-- Duplicate title+source → blocked, input cleared
-- `_undone` field deprecated (always `false`)
-
----
-
-## License
 
 This project is licensed under the GNU Affero General Public License v3.0 - see the [LICENSE](LICENSE) file for details.

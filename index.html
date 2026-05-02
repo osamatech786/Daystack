@@ -65,6 +65,11 @@
       100% { opacity: 0.4; }
     }
 
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
     @keyframes zenBreath {
       0%, 100% { transform: scale(1); opacity: 0.8; }
       50% { transform: scale(1.05); opacity: 1; }
@@ -1345,6 +1350,85 @@
     .save-pulse {
       animation: savePulse 2s infinite;
     }
+
+    /* Cloud Sync Status */
+    .cloud-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      opacity: 0.6;
+      margin-left: 12px;
+      transition: opacity 0.3s;
+    }
+
+    .cloud-status.active {
+      opacity: 1;
+    }
+
+    .cloud-icon {
+      font-size: 14px;
+    }
+
+    .cloud-icon.syncing {
+      animation: spin 2s linear infinite;
+      display: inline-block;
+    }
+
+    .cloud-error {
+      color: var(--pri-red);
+    }
+
+    .cloud-success {
+      color: var(--pri-green);
+    }
+
+    .settings-btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .settings-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .settings-btn:hover {
+      border-color: var(--text);
+      background: var(--surface);
+    }
+
+    .settings-btn.pri {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    .token-input {
+      width: 100% !important;
+      margin-top: 8px;
+    }
+
+    .sync-hint {
+      font-size: 10px;
+      opacity: 0.5;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .sync-hint a {
+      color: var(--pri-blue);
+      text-decoration: none;
+    }
   </style>
 </head>
 
@@ -1363,6 +1447,10 @@
       <div class="search-wrap">
         <input type="text" class="search-input" id="search-tasks" placeholder="Search tasks, groups, or subtasks...">
         <div class="file-btns">
+          <div id="cloud-sync-status" class="cloud-status">
+            <span class="cloud-icon" id="cloud-icon">☁</span>
+            <span id="cloud-text">Local Only</span>
+          </div>
           <div class="btn-wrap">
             <button class="file-btn" id="btn-export">Save</button>
             <div class="dirty-dot" id="save-dirty"></div>
@@ -1585,6 +1673,45 @@
         </div>
       </div>
 
+      <div class="settings-section">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Cloud Backup & Sync (GitHub)</div>
+            <div class="settings-desc">Keep your data synced across devices using a private Gist.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-cloud-sync">
+            <span class="slider"></span>
+          </label>
+        </div>
+        
+        <div id="cloud-settings-fields" style="display: none; margin-top: 12px;">
+          <div style="background: rgba(59, 130, 246, 0.1); padding: 10px; border-radius: 8px; margin-bottom: 16px; border-left: 3px solid var(--pri-blue);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <div style="font-size: 11px; font-weight: 700;">🛡️ Security & Setup</div>
+              <a href="https://github.com/osamatech786/daystack#cloud-sync-setup-guide" target="_blank" style="font-size: 10px; color: var(--pri-blue); text-decoration: none; font-weight: 600;">How to setup?</a>
+            </div>
+            <div style="font-size: 10px; line-height: 1.4; opacity: 0.8;">
+              Use a <b>Fine-grained Personal Access Token</b> limited ONLY to "Gists" (read/write). This ensures your repositories and private code remain safe.
+            </div>
+          </div>
+          <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
+            <div class="settings-label">GitHub Personal Access Token</div>
+            <input type="password" id="set-cloud-token" class="settings-input token-input" placeholder="ghp_xxxxxxxxxxxx">
+            <div class="sync-hint">Requires 'gist' scope. <a href="https://github.com/settings/tokens/new?description=Daystack%20Sync&scopes=gist" target="_blank">Generate one here</a>.</div>
+          </div>
+          <div class="settings-row" style="flex-direction: column; align-items: flex-start; margin-top: 12px;">
+            <div class="settings-label">Gist ID (Optional)</div>
+            <input type="text" id="set-cloud-gist-id" class="settings-input token-input" placeholder="Auto-created if empty">
+            <div class="sync-hint">Leave empty to create a new one.</div>
+          </div>
+          <div class="settings-btn-group">
+            <button class="settings-btn" id="btn-cloud-restore">Restore from Cloud</button>
+            <button class="settings-btn pri" id="btn-cloud-sync">Sync Now</button>
+          </div>
+        </div>
+      </div>
+
       <button class="modal-close" onclick="toggleSettings()">Close & Apply</button>
     </div>
   </div>
@@ -1651,7 +1778,13 @@
         savePulse: true,
         focusPings: false,
         focusFreq: 25,
-        notifications: false
+        focusFreq: 25,
+        notifications: false,
+        cloudSync: false,
+        cloudToken: '',
+        cloudGistId: '',
+        cloudAutoSync: true,
+        cloudLastSync: ''
       };
       
       data.settings = { ...defaultSettings, ...(data.settings || {}) };
@@ -1691,6 +1824,165 @@
       document.getElementById('save-dirty').classList.add('show');
       if (state.settings.savePulse) {
         document.getElementById('btn-export').classList.add('save-pulse');
+      }
+      if (state.settings.cloudSync && state.settings.cloudAutoSync) {
+        syncToCloud();
+      }
+    }
+
+    // ── Cloud Sync (GitHub Gist) ──────────────────────────────
+    async function syncToCloud(force = false) {
+      if (!state.settings.cloudSync && !force) return;
+      if (!state.settings.cloudToken) {
+        updateCloudStatus('Error: No Token', 'cloud-error');
+        return;
+      }
+
+      updateCloudStatus('Syncing...', 'syncing');
+
+      const data = JSON.stringify(state, null, 2);
+      const filename = 'daystack-data.json';
+      const token = state.settings.cloudToken;
+      let gistId = state.settings.cloudGistId;
+
+      try {
+        let url = 'https://api.github.com/gists';
+        let method = 'POST';
+
+        if (gistId) {
+          url += '/' + gistId;
+          method = 'PATCH';
+        }
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            description: 'Daystack Data Backup',
+            public: false,
+            files: {
+              [filename]: { content: data }
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.message || 'GitHub API error');
+        }
+
+        const result = await response.json();
+        state.settings.cloudLastSync = result.updated_at;
+        if (!gistId) {
+          state.settings.cloudGistId = result.id;
+          save(state);
+          // Update the UI field if settings is open
+          const gistInput = document.getElementById('set-cloud-gist-id');
+          if (gistInput) gistInput.value = result.id;
+        }
+
+        updateCloudStatus('Synced', 'cloud-success');
+      } catch (err) {
+        console.error('Cloud Sync Error:', err);
+        updateCloudStatus('Error: ' + err.message, 'cloud-error');
+      }
+    }
+
+    async function syncFromCloud() {
+      if (!state.settings.cloudToken || !state.settings.cloudGistId) {
+        alert('Please provide a GitHub Token and Gist ID to restore.');
+        return;
+      }
+
+      updateCloudStatus('Restoring...', 'syncing');
+
+      try {
+        const response = await fetch(`https://api.github.com/gists/${state.settings.cloudGistId}`, {
+          headers: {
+            'Authorization': `token ${state.settings.cloudToken}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch Gist');
+
+        const gist = await response.json();
+        const file = gist.files['daystack-data.json'];
+        if (!file) throw new Error('Daystack data not found in Gist');
+
+        const imported = JSON.parse(file.content);
+        
+        // Update state
+        state.tasks = imported.tasks || [];
+        state.projects = imported.projects || [];
+        state.generalCollapsed = imported.generalCollapsed || {};
+        state.settings = { ...state.settings, ...(imported.settings || {}) };
+        state.settings.cloudLastSync = gist.updated_at; // Crucial for heartbeat check
+        state.lastActiveDate = imported.lastActiveDate || today();
+        
+        performDailyReset(state);
+        save(state);
+        renderAll();
+        
+        updateCloudStatus('Restored', 'cloud-success');
+        alert('Data successfully restored from cloud.');
+
+      } catch (err) {
+        console.error('Cloud Restore Error:', err);
+        updateCloudStatus('Error: ' + err.message, 'cloud-error');
+        alert('Failed to restore: ' + err.message);
+      }
+    }
+
+    async function checkForRemoteUpdates() {
+      if (!state.settings.cloudSync || !state.settings.cloudToken || !state.settings.cloudGistId) return;
+      
+      try {
+        const response = await fetch(`https://api.github.com/gists/${state.settings.cloudGistId}`, {
+          headers: {
+            'Authorization': `token ${state.settings.cloudToken}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (!response.ok) return;
+
+        const gist = await response.json();
+        const remoteUpdated = new Date(gist.updated_at);
+        const localSynced = new Date(state.settings.cloudLastSync || 0);
+
+        if (remoteUpdated > localSynced) {
+          updateCloudStatus('Newer data in cloud', 'cloud-error');
+          // We don't auto-overwrite to avoid data loss. We just nudge the user.
+          // In a future version, we could do a smart merge.
+        }
+      } catch (e) {
+        console.warn('Cloud heartbeat check failed:', e);
+      }
+    }
+
+    function updateCloudStatus(text, type) {
+      const statusEl = document.getElementById('cloud-sync-status');
+      const iconEl = document.getElementById('cloud-icon');
+      const textEl = document.getElementById('cloud-text');
+
+      statusEl.classList.add('active');
+      textEl.textContent = text;
+      
+      iconEl.className = 'cloud-icon';
+      if (type === 'syncing') iconEl.classList.add('syncing');
+      if (type === 'cloud-error') iconEl.classList.add('cloud-error');
+      if (type === 'cloud-success') iconEl.classList.add('cloud-success');
+
+      if (type === 'cloud-success') {
+        setTimeout(() => {
+          textEl.textContent = 'Synced';
+          iconEl.classList.remove('cloud-success');
+        }, 3000);
       }
     }
 
@@ -2427,6 +2719,12 @@
         document.getElementById('set-notifications').checked = state.settings.notifications;
         document.getElementById('set-reset-time').value = state.settings.resetTime;
         
+        // Cloud Sync fields
+        document.getElementById('set-cloud-sync').checked = state.settings.cloudSync;
+        document.getElementById('set-cloud-token').value = state.settings.cloudToken;
+        document.getElementById('set-cloud-gist-id').value = state.settings.cloudGistId;
+        document.getElementById('cloud-settings-fields').style.display = state.settings.cloudSync ? 'block' : 'none';
+
         overlay.classList.add('show');
       } else {
         // Save inputs to state
@@ -2439,13 +2737,37 @@
         state.settings.focusFreq = parseInt(document.getElementById('set-focus-freq').value) || 25;
         state.settings.notifications = document.getElementById('set-notifications').checked;
         state.settings.resetTime = document.getElementById('set-reset-time').value || '00:00';
+
+        // Cloud Sync save
+        const wasSyncEnabled = state.settings.cloudSync;
+        state.settings.cloudSync = document.getElementById('set-cloud-sync').checked;
+        state.settings.cloudToken = document.getElementById('set-cloud-token').value.trim();
+        state.settings.cloudGistId = document.getElementById('set-cloud-gist-id').value.trim();
         
         overlay.classList.remove('show');
         if (state.settings.notifications) requestNotificationPermission();
         save(state);
+
+        // If sync was just enabled, trigger a sync
+        if (!wasSyncEnabled && state.settings.cloudSync) {
+          syncToCloud();
+        }
+
         renderAll();
       }
     }
+
+    // Toggle cloud fields visibility
+    document.getElementById('set-cloud-sync').addEventListener('change', (e) => {
+      document.getElementById('cloud-settings-fields').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    document.getElementById('btn-cloud-sync').addEventListener('click', () => syncToCloud(true));
+    document.getElementById('btn-cloud-restore').addEventListener('click', () => {
+      if (confirm('Restore from Cloud? This will overwrite your current local data.')) {
+        syncFromCloud();
+      }
+    });
 
     document.getElementById('btn-settings').addEventListener('click', toggleSettings);
 
