@@ -167,7 +167,7 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 - **Auto-Save**: Manages background disk syncing. Now supports **Instant Save** (frequency 0) for truly real-time disk persistence.
 - **Focus Pings**: Triggers periodic visual nudges.
 - **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed). Now features **Conflict Detection** to prevent accidental overwrites when enabling sync on new devices.
-- **Intelligent Conflict Resolution**: When enabling sync, Daystack verifies if a remote Gist already exists. If it does, and the local device has no sync history, it halts the auto-sync to protect your cloud data, allowing you to choose whether to **Restore** or **Sync**.
+- **Intelligent Conflict Resolution & Auto-Pull**: Follows industry best practices by silently auto-pulling background updates when the cloud is newer and you have no unsaved local changes. If you do have local changes, it safely pauses sync and warns of the conflict to prevent data loss. It also halts auto-sync on new devices if a remote Gist exists but local sync history is missing.
 
 ### Settings Modal
 Accessed via the ⚙️ icon. Controls:
