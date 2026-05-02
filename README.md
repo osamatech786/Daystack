@@ -28,7 +28,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 
 - ✨ **Premium Design**: Modern, clean, glassmorphic UI with smooth micro-animations.
 - 📁 **Pro File Handling**: Overwrites existing files using the File System Access API (no duplicate downloads!).
-- ⌨️ **Power User Shortcuts**: Press `Ctrl + S` to save instantly.
+- ⌨️ **Power User Shortcuts**: Press `Ctrl + S` to save instantly, and `Esc` to close settings or inputs.
 - 💾 **Persistence**: Active file handle is saved in IndexedDB; it remembers your file even after a refresh.
 - 🔄 **Smart Reset**: Automatically distinguishes between daily habits and one-off tasks. Now operates in real-time (no refresh needed at midnight) and intelligently refreshes imported legacy data.
 - 🔁 **Interactive Toggle**: Click the `↻` icon on any task to switch between Recurring and One-off.
@@ -38,6 +38,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🌓 **Dynamic Theme**: Automatically switches between light and dark mode based on the time of day (Default).
 - ⚙️ **Settings Modal**: Premium glassmorphic panel to control all app behaviors.
 - ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
+- ☁️ **Interactive Cloud**: Click/Touch the cloud icon in the header to trigger an instant sync (or as a shortcut to Cloud Settings).
 - 🚀 **Blazing Fast**: Single-page architecture with zero external dependencies.
 - 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars to maximize vertical space.
 - ↕️ **Master Toggle**: Expand or collapse all groups in a tab with a single click.
@@ -118,8 +119,8 @@ Each column has a filter bar above the task list:
 - **Radical Portability**: Export/Import your entire state as a single JSON file.
 
 > [!CAUTION]
-> **Keep your backup files secure!** 
-> Your `daystack-tasks.json` backup file contains your GitHub Personal Access Token. If someone gains access to this file, they can restore your data and access your private task list. Never share your backup files publicly.
+> **Your GitHub Token is NEVER saved in your backup files.** 
+> For security, Daystack automatically strips your Personal Access Token from all JSON exports and GitHub Gists. This prevents GitHub from automatically revoking your token and keeps your credentials private. Never share your active token with anyone.
 
 ---
 
@@ -128,9 +129,10 @@ Each column has a filter bar above the task list:
 Daystack offers a free, user-controlled cloud backup using GitHub Gists.
 
 ### 🛡️ Security First
-Your GitHub Token is stored only in your browser's local storage and is protected by the **Same-Origin Policy**, meaning other websites cannot access it. 
+Your GitHub Token is stored only in your browser's **IndexedDB/Local Storage** and is protected by the **Same-Origin Policy**.
 
-**Best Practice**: We strongly recommend using a **Fine-grained Personal Access Token** limited ONLY to "Gists" (read/write). This ensures that even if the token were compromised, an attacker would have NO access to your repositories, private code, or account settings.
+- **Automatic Stripping**: To prevent accidental leaks and auto-revocation by GitHub, Daystack **automatically removes** your token from all Gist uploads and JSON file exports. 
+- **Fine-grained Access**: We strongly recommend using a **Fine-grained Personal Access Token** limited ONLY to "Gists" (read/write). This ensures that even if the token were compromised, an attacker would have NO access to your repositories or account.
 
 ### 📖 Cloud Sync Setup Guide
 
@@ -150,8 +152,8 @@ To enable cross-device sync, follow these steps:
 1. Open Daystack **Settings** (⚙ icon).
 2. Enable **Cloud Backup & Sync**.
 3. Paste your **GitHub Token**.
-4. **Gist ID**: Leave this **blank** if it's your first time. Daystack will automatically create a secret Gist for you and fill this ID in. 
-   - *Note: If you are setting up a second device, paste the Gist ID from your first device here.*
+4. **Gist ID**: Leave this **blank**. Daystack will automatically discover your existing backup or create a new one for you.
+   - *Note: You only need to paste a Gist ID manually if you want to connect to a specific, non-Daystack Gist.*
 5. Click **Close & Apply**.
 
 ---
@@ -173,6 +175,7 @@ Accessed via the ⚙️ icon. Controls:
 - **Auto-Save**: Periodically syncs to your disk file.
 - **Focus Pings**: Periodic glow on active tasks.
 - **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM).
+- **Reset Gist**: Manually clear Gist history and start a fresh cloud backup.
 
 ### Persistence & Portability
 - **Native File Sync**: Use the File System Access API to save directly to your computer.
@@ -185,7 +188,7 @@ Accessed via the ⚙️ icon. Controls:
 - `Ctrl + S`: Save instantly to disk.
 - `Alt + 1-4`: Switch tabs (Today, Progress, Done, Recurring).
 - `Enter`: Confirm task/subtask.
-- `Esc`: Cancel/Close inputs.
+- `Esc`: Cancel/Close inputs, or close Settings modal.
 
 ---
 
