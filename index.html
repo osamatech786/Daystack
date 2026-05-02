@@ -1352,6 +1352,10 @@
       if (!data.projects) data.projects = [];
       if (!data.lastActiveDate) data.lastActiveDate = today();
 
+      return performDailyReset(data);
+    }
+
+    function performDailyReset(data) {
       if (data.lastActiveDate !== today()) {
         // Daily reset: 
         // 1. Reset daily tasks (return to For Today)
@@ -2361,6 +2365,12 @@
 
     // ── Boot ────────────────────────────────────────────────────
     function updateResetTimer() {
+      // Periodic check for daily reset (handles midnight transition while app is open)
+      if (state.lastActiveDate !== today()) {
+        performDailyReset(state);
+        renderAll();
+      }
+
       const now = new Date();
       const night = new Date();
       night.setHours(24, 0, 0, 0);
@@ -2546,6 +2556,7 @@
         state.projects = imported.projects || [];
         state.generalCollapsed = imported.generalCollapsed || {};
         state.lastActiveDate = imported.lastActiveDate || today();
+        performDailyReset(state);
         save(state);
         isDirty = false; // Freshly loaded
         document.getElementById('save-dirty').classList.remove('show');
@@ -2596,6 +2607,7 @@
           state.projects = imported.projects || [];
           state.generalCollapsed = imported.generalCollapsed || {};
           state.lastActiveDate = imported.lastActiveDate || today();
+          performDailyReset(state);
           save(state);
           renderAll();
         } catch (err) {

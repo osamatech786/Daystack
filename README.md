@@ -30,7 +30,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 📁 **Pro File Handling**: Overwrites existing files using the File System Access API (no duplicate downloads!).
 - ⌨️ **Power User Shortcuts**: Press `Ctrl + S` to save instantly.
 - 💾 **Persistence**: Active file handle is saved in IndexedDB; it remembers your file even after a refresh.
-- 🔄 **Smart Reset**: Automatically distinguishes between daily habits and one-off tasks at midnight.
+- 🔄 **Smart Reset**: Automatically distinguishes between daily habits and one-off tasks. Now operates in real-time (no refresh needed at midnight) and intelligently refreshes imported legacy data.
 - 🔁 **Interactive Toggle**: Click the `↻` icon on any task to switch between Recurring and One-off.
 - ⏰ **Reset Countdown**: Live "Next Reset" timer in the header shows exactly when the pool will refresh.
 - ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
@@ -174,9 +174,14 @@ Each column has a filter bar above the task list:
 
 ---
 
-## Daily Reset (on page load)
+## Daily Reset (Intelligent)
 
-Compare `lastActiveDate` vs today's date (`YYYY-MM-DD`):
+The app compares `lastActiveDate` vs today's date (`YYYY-MM-DD`) and triggers a reset in three scenarios:
+1. **On Page Load**: Standard boot-up check.
+2. **At Midnight (Real-time)**: If the app is left open, a periodic check (every 60s) detects the date change and refreshes the pool instantly.
+3. **On Import**: Loading a file from a previous day automatically triggers a reset for today's context.
+
+### Reset Rules:
 
 1. **Recurring tasks** (`source === 'daily'`):
    - `_struck = false`
