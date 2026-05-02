@@ -60,19 +60,41 @@
     }
 
     @keyframes pulse {
-      0% { opacity: 0.4; }
-      50% { opacity: 1; }
-      100% { opacity: 0.4; }
+      0% {
+        opacity: 0.4;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0.4;
+      }
     }
 
     @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @keyframes zenBreath {
-      0%, 100% { transform: scale(1); opacity: 0.8; }
-      50% { transform: scale(1.05); opacity: 1; }
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+
+      50% {
+        transform: scale(1.05);
+        opacity: 1;
+      }
     }
 
     .zen-mode .zen-element {
@@ -93,13 +115,25 @@
 
     /* Focus Ping Glow */
     @keyframes focusPing {
-      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); transform: scale(1); }
-      50% { box-shadow: 0 0 20px 10px rgba(34, 197, 94, 0); transform: scale(1.02); }
-      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); transform: scale(1); }
+      0% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+        transform: scale(1);
+      }
+
+      50% {
+        box-shadow: 0 0 20px 10px rgba(34, 197, 94, 0);
+        transform: scale(1.02);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        transform: scale(1);
+      }
     }
 
     .focus-ping {
-      animation: focusPing 2s ease-out 3; /* Pulse 3 times */
+      animation: focusPing 2s ease-out 3;
+      /* Pulse 3 times */
       border-color: var(--pri-green) !important;
     }
 
@@ -1086,15 +1120,22 @@
       border-radius: 16px;
       max-width: 400px;
       width: 90%;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
       text-align: center;
       border: 1px solid var(--border);
       animation: cardIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     @keyframes cardIn {
-      from { transform: scale(0.8) translateY(20px); opacity: 0; }
-      to { transform: scale(1) translateY(0); opacity: 1; }
+      from {
+        transform: scale(0.8) translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
     }
 
     .onboard-card h2 {
@@ -1162,14 +1203,21 @@
     }
 
     @keyframes hintFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-5px);
+      }
     }
 
     .highlight-target {
       position: relative;
       z-index: 1002 !important;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5), 0 0 15px rgba(255,255,255,0.5) !important;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 255, 255, 0.5) !important;
       border-radius: 4px;
       pointer-events: auto !important;
     }
@@ -1221,8 +1269,15 @@
     }
 
     @keyframes modalPop {
-      from { opacity: 0; transform: scale(0.95) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
 
     .modal-card {
@@ -1231,7 +1286,7 @@
       border-radius: 24px;
       max-width: 540px;
       width: 100%;
-      box-shadow: 0 30px 60px -12px rgba(0,0,0,0.4), 0 18px 36px -18px rgba(0,0,0,0.4);
+      box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.4), 0 18px 36px -18px rgba(0, 0, 0, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.08);
       max-height: 90vh;
       display: flex;
@@ -1241,9 +1296,9 @@
     }
 
     [data-theme="dark"] .modal-card {
-        background: rgba(30, 30, 30, 0.8);
-        backdrop-filter: blur(20px);
-        border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(30, 30, 30, 0.8);
+      backdrop-filter: blur(20px);
+      border-color: rgba(255, 255, 255, 0.1);
     }
 
     .modal-header {
@@ -1276,9 +1331,11 @@
     .modal-body::-webkit-scrollbar {
       width: 6px;
     }
+
     .modal-body::-webkit-scrollbar-track {
       background: transparent;
     }
+
     .modal-body::-webkit-scrollbar-thumb {
       background: var(--border);
       border-radius: 10px;
@@ -1316,11 +1373,11 @@
     }
 
     .settings-row:not(:last-child) {
-        border-bottom: 1px solid rgba(0,0,0,0.03);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.03);
     }
 
     [data-theme="dark"] .settings-row:not(:last-child) {
-        border-bottom: 1px solid rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     }
 
     .settings-info {
@@ -1376,14 +1433,14 @@
       background-color: white;
       transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
       border-radius: 50%;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    input:checked + .slider {
+    input:checked+.slider {
       background: linear-gradient(135deg, var(--pri-green), #10b981);
     }
 
-    input:checked + .slider:before {
+    input:checked+.slider:before {
       transform: translateX(20px);
     }
 
@@ -1399,9 +1456,9 @@
     }
 
     .settings-input:focus {
-        border-color: var(--text);
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+      border-color: var(--text);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
     }
 
     .modal-close {
@@ -1415,24 +1472,32 @@
       font-size: 15px;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .modal-close:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      opacity: 0.9;
     }
 
     .modal-close:active {
-        transform: translateY(0);
+      transform: translateY(0);
     }
 
     /* Pulsing Save Button */
     @keyframes savePulse {
-      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+      0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
     }
 
     .save-pulse {
@@ -1510,7 +1575,7 @@
     }
 
     .settings-btn:active {
-        transform: translateY(0);
+      transform: translateY(0);
     }
 
     .settings-btn.pri {
@@ -1687,7 +1752,7 @@
       <div class="modal-header">
         <h2><span class="zen-element">🧘</span> Settings</h2>
       </div>
-      
+
       <div class="modal-body">
         <div class="settings-section">
           <div class="settings-row">
@@ -1793,25 +1858,34 @@
               <span class="slider"></span>
             </label>
           </div>
-          
+
           <div id="cloud-settings-fields" style="display: none; margin-top: 12px;">
-            <div style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 12px; margin-bottom: 16px; border-left: 4px solid var(--pri-blue);">
+            <div
+              style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 12px; margin-bottom: 16px; border-left: 4px solid var(--pri-blue);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <div style="font-size: 12px; font-weight: 700;">🛡️ Security & Setup</div>
-                <a href="https://github.com/osamatech786/daystack#cloud-sync-setup-guide" target="_blank" style="font-size: 11px; color: var(--pri-blue); text-decoration: none; font-weight: 600;">Setup Guide</a>
+                <a href="https://github.com/osamatech786/daystack#cloud-sync-setup-guide" target="_blank"
+                  style="font-size: 11px; color: var(--pri-blue); text-decoration: none; font-weight: 600;">Setup
+                  Guide</a>
               </div>
               <div style="font-size: 11px; line-height: 1.5; opacity: 0.9;">
-                Use a <b>Fine-grained Personal Access Token</b> limited ONLY to "Gists" (read/write). This ensures your repositories and private code remain safe.
+                Use a <b>Fine-grained Personal Access Token</b> limited ONLY to "Gists" (read/write). This ensures your
+                repositories and private code remain safe.
               </div>
             </div>
             <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
               <div class="settings-label">GitHub Personal Access Token</div>
-              <input type="password" id="set-cloud-token" class="settings-input token-input" placeholder="ghp_xxxxxxxxxxxx">
-              <div class="sync-hint">Requires 'gist' scope. <a href="https://github.com/settings/tokens/new?description=Daystack%20Sync&scopes=gist" target="_blank">Generate one here</a>.</div>
+              <input type="password" id="set-cloud-token" class="settings-input token-input"
+                placeholder="ghp_xxxxxxxxxxxx">
+              <div class="sync-hint">Requires 'gist' scope. <a
+                  href="https://github.com/settings/tokens/new?description=Daystack%20Sync&scopes=gist"
+                  target="_blank">Generate one here</a>.</div>
             </div>
-            <div class="settings-row" style="flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 12px;">
+            <div class="settings-row"
+              style="flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 12px;">
               <div class="settings-label">Gist ID (Optional)</div>
-              <input type="text" id="set-cloud-gist-id" class="settings-input token-input" placeholder="Auto-created if empty">
+              <input type="text" id="set-cloud-gist-id" class="settings-input token-input"
+                placeholder="Auto-created if empty">
               <div class="sync-hint">Leave empty to create a new one.</div>
             </div>
             <div class="settings-row" style="margin-top: 12px;">
@@ -1833,7 +1907,8 @@
             </div>
             <div class="settings-btn-group">
               <button class="settings-btn" id="btn-cloud-restore">Restore from Cloud</button>
-              <button class="settings-btn" id="btn-cloud-reset-gist" title="Deletes current Gist and creates a fresh one to clear history">Reset Gist</button>
+              <button class="settings-btn" id="btn-cloud-reset-gist"
+                title="Deletes current Gist and creates a fresh one to clear history">Reset Gist</button>
               <button class="settings-btn pri" id="btn-cloud-sync">Sync Now</button>
             </div>
           </div>
@@ -1898,7 +1973,7 @@
       if (!data.tasks) data.tasks = [];
       if (!data.projects) data.projects = [];
       if (!data.lastActiveDate) data.lastActiveDate = today();
-      
+
       // Default Settings
       const defaultSettings = {
         theme: 'dynamic',
@@ -1920,7 +1995,7 @@
         cloudRefreshOnReset: false,
         cloudLastSync: ''
       };
-      
+
       data.settings = { ...defaultSettings, ...(data.settings || {}) };
 
       return performDailyReset(data);
@@ -1929,7 +2004,7 @@
     function performDailyReset(data) {
       const resetTime = (data.settings && data.settings.resetTime) || '00:00';
       const currentCycleDate = getCycleDate(resetTime);
-      
+
       if (data.lastActiveDate !== currentCycleDate) {
         // Daily reset: 
         // 1. Reset daily tasks (return to For Today)
@@ -1962,15 +2037,18 @@
         isDirty = true;
         isCloudDirty = true;
         document.getElementById('save-dirty').classList.add('show');
-        if (state.settings.savePulse) {
+        if (data.settings.savePulse) {
           document.getElementById('btn-export').classList.add('save-pulse');
         }
+        // Instant Local Save (Freq 0) - Only if not silent to avoid loops
+        if (data.settings.autoSave && (data.settings.autoSaveFreq === 0 || data.settings.autoSaveFreq === '0')) {
+          saveToFile();
+        }
       }
-      if (!skipCloud && state.settings.cloudSync && state.settings.cloudAutoSync && (state.settings.cloudSyncFreq === 0 || state.settings.cloudSyncFreq === '0')) {
+
+      // Instant Cloud Sync (Freq 0) - Only if not skipped
+      if (!skipCloud && data.settings.cloudSync && data.settings.cloudAutoSync && (data.settings.cloudSyncFreq === 0 || data.settings.cloudSyncFreq === '0')) {
         syncToCloud();
-      }
-      if (state.settings.autoSave && (state.settings.autoSaveFreq === 0 || state.settings.autoSaveFreq === '0')) {
-        saveToFile();
       }
     }
 
@@ -2000,8 +2078,8 @@
         if (!response.ok) return null;
         const gists = await response.json();
         // Look for our specific backup Gist by description or filename
-        const found = gists.find(g => 
-          g.description === 'Daystack Data Backup' || 
+        const found = gists.find(g =>
+          g.description === 'Daystack Data Backup' ||
           (g.files && g.files['daystack-data.json'])
         );
         return found ? found.id : null;
@@ -2067,7 +2145,7 @@
           const gistInput = document.getElementById('set-cloud-gist-id');
           if (gistInput) gistInput.value = gistId;
           save(state, true, true);
-          
+
           // After discovery, if not forced, we should check for conflict again 
           // because we now have a gistId we didn't have before.
           if (!force) {
@@ -2126,7 +2204,7 @@
           const gistInput = document.getElementById('set-cloud-gist-id');
           if (gistInput) gistInput.value = result.id;
         }
-        
+
         save(state, true, true); // skipCloud to avoid loop, silent to avoid dirtying UI
         window._lastCloudSync = new Date();
         isCloudDirty = false;
@@ -2140,7 +2218,7 @@
     async function syncFromCloud() {
       const token = (state.settings.cloudToken || '').trim();
       let gistId = (state.settings.cloudGistId || '').trim();
-      
+
       if (!token) {
         alert('Please provide a GitHub Token to restore.');
         return;
@@ -2178,25 +2256,31 @@
         if (!file) throw new Error('Daystack data not found in Gist');
 
         const imported = JSON.parse(file.content);
-        
+
         // Update state
         state.tasks = imported.tasks || [];
         state.projects = imported.projects || [];
         state.generalCollapsed = imported.generalCollapsed || {};
-        const localToken = state.settings.cloudToken;
-        const localGistId = state.settings.cloudGistId;
+        
+        // Capture local-only credentials BEFORE merging settings
+        const currentToken = state.settings.cloudToken;
+        const currentGistId = state.settings.cloudGistId;
+        
         state.settings = { ...state.settings, ...(imported.settings || {}) };
-        state.settings.cloudToken = localToken;
-        state.settings.cloudGistId = localGistId;
+        
+        // Unconditionally restore the local credentials
+        state.settings.cloudToken = currentToken;
+        state.settings.cloudGistId = currentGistId;
+        
         state.settings.cloudLastSync = gist.updated_at; // Crucial for heartbeat check
         window._remoteLastUpdated = gist.updated_at; // Update global state too
         state.lastActiveDate = imported.lastActiveDate || today();
-        
+
         performDailyReset(state);
         save(state);
         isCloudDirty = false;
         renderAll();
-        
+
         updateCloudStatus('Restored', 'cloud-success');
         alert('Data successfully restored from cloud.');
 
@@ -2283,7 +2367,7 @@
 
       statusEl.classList.add('active');
       textEl.textContent = text;
-      
+
       iconEl.className = 'cloud-icon';
       if (type === 'syncing') iconEl.classList.add('syncing');
       if (type === 'cloud-error') iconEl.classList.add('cloud-error');
@@ -2369,7 +2453,7 @@
       <button class="sub-del-btn" data-action="delete-sub" data-tid="${task.id}" data-sid="${s.id}" title="Delete subtask">×</button>
     </div>
   `).join('');
-      
+
       const inProgressClass = isInProgress(task) ? 'in-progress-view' : '';
 
       const addSubBtn = view !== 'done' ? `<button class="add-sub-btn" data-action="add-sub" data-tid="${task.id}" data-view="${view}" title="Add a subtask to this task">+ Add subtask</button>` : '';
@@ -2425,17 +2509,17 @@
         groups[pid].push(t);
       });
 
-        // Render Groups
-        const projectOrder = ['none', ...state.projects.map(p => p.id)];
-        const isNewUser = state.tasks.length === 0 && state.projects.length === 0;
+      // Render Groups
+      const projectOrder = ['none', ...state.projects.map(p => p.id)];
+      const isNewUser = state.tasks.length === 0 && state.projects.length === 0;
 
-        projectOrder.forEach(pid => {
-          const groupTasks = groups[pid] || [];
-          if (selectedProjectId !== 'all' && selectedProjectId !== pid) return;
-          
-          // Show General group even if empty IF it's a new user or specifically selected
-          const shouldShowEmptyGeneral = (pid === 'none') && (isNewUser || selectedProjectId === 'none');
-          if (selectedProjectId === 'all' && groupTasks.length === 0 && !shouldShowEmptyGeneral) return;
+      projectOrder.forEach(pid => {
+        const groupTasks = groups[pid] || [];
+        if (selectedProjectId !== 'all' && selectedProjectId !== pid) return;
+
+        // Show General group even if empty IF it's a new user or specifically selected
+        const shouldShowEmptyGeneral = (pid === 'none') && (isNewUser || selectedProjectId === 'none');
+        if (selectedProjectId === 'all' && groupTasks.length === 0 && !shouldShowEmptyGeneral) return;
 
         let project = state.projects.find(p => p.id === pid);
         if (pid === 'none') {
@@ -2527,7 +2611,7 @@
     function updateZenBreath() {
       const isEnabled = state.settings.zenBreath;
       document.body.classList.toggle('zen-mode', isEnabled);
-      
+
       // Remove from all first
       document.querySelectorAll('.zen-element').forEach(el => {
         if (!el.classList.contains('logo')) el.classList.remove('zen-element');
@@ -2998,7 +3082,7 @@
     function applyTheme() {
       const theme = state.settings.theme;
       const btn = document.getElementById('btn-theme');
-      
+
       if (theme === 'dark') {
         document.documentElement.dataset.theme = 'dark';
         btn.textContent = '☾';
@@ -3026,7 +3110,7 @@
     function toggleSettings() {
       const overlay = document.getElementById('settings-overlay');
       const isShowing = overlay.classList.contains('show');
-      
+
       if (!isShowing) {
         // Fill inputs from state
         document.getElementById('set-zen-breath').checked = state.settings.zenBreath;
@@ -3038,7 +3122,7 @@
         document.getElementById('set-focus-freq').value = state.settings.focusFreq;
         document.getElementById('set-notifications').checked = state.settings.notifications;
         document.getElementById('set-reset-time').value = state.settings.resetTime;
-        
+
         // Cloud Sync fields
         document.getElementById('set-cloud-sync').checked = state.settings.cloudSync;
         document.getElementById('set-cloud-token').value = state.settings.cloudToken;
@@ -3057,17 +3141,17 @@
         setBool('zenBreath', document.getElementById('set-zen-breath').checked);
         setBool('nightShift', document.getElementById('set-night-shift').checked);
         setBool('autoSave', document.getElementById('set-auto-save').checked);
-        
+
         let newAutoSaveFreq = parseInt(document.getElementById('set-auto-save-freq').value);
         if (isNaN(newAutoSaveFreq)) newAutoSaveFreq = 10;
         if (state.settings.autoSaveFreq !== newAutoSaveFreq) { state.settings.autoSaveFreq = newAutoSaveFreq; changed = true; }
-        
+
         setBool('savePulse', document.getElementById('set-save-pulse').checked);
         setBool('focusPings', document.getElementById('set-focus-pings').checked);
-        
+
         const newFocusFreq = parseInt(document.getElementById('set-focus-freq').value) || 25;
         if (state.settings.focusFreq !== newFocusFreq) { state.settings.focusFreq = newFocusFreq; changed = true; }
-        
+
         setBool('notifications', document.getElementById('set-notifications').checked);
         setVal('resetTime', document.getElementById('set-reset-time').value || '00:00');
 
@@ -3079,12 +3163,12 @@
         setBool('cloudSync', document.getElementById('set-cloud-sync').checked);
         setVal('cloudToken', document.getElementById('set-cloud-token').value.trim());
         setVal('cloudGistId', document.getElementById('set-cloud-gist-id').value.trim());
-        
+
         const newCloudSyncFreq = parseInt(document.getElementById('set-cloud-sync-freq').value) || 0;
         if (state.settings.cloudSyncFreq !== newCloudSyncFreq) { state.settings.cloudSyncFreq = newCloudSyncFreq; changed = true; }
-        
+
         setBool('cloudRefreshOnReset', document.getElementById('set-cloud-refresh-reset').checked);
-        
+
         // If Gist ID or Token changed, we should clear the last sync timestamp to force a fresh conflict check
         if (state.settings.cloudGistId !== oldGistId || state.settings.cloudToken !== oldToken) {
           state.settings.cloudLastSync = '';
@@ -3093,7 +3177,7 @@
 
         overlay.classList.remove('show');
         if (state.settings.notifications) requestNotificationPermission();
-        
+
         if (changed) {
           save(state);
           // If sync was just enabled OR changed to instant, trigger a sync
@@ -3245,7 +3329,7 @@
       if (now - lastTap < TIMESPAN) {
         clearTimeout(longPressTimer);
         triggerRename(target);
-        e.preventDefault(); 
+        e.preventDefault();
         return;
       }
       lastTap = now;
@@ -3253,7 +3337,7 @@
       // Long Press detection (1s to avoid conflict with Drag & Drop)
       longPressTimer = setTimeout(() => {
         triggerRename(target);
-        if (window.navigator.vibrate) window.navigator.vibrate(50); 
+        if (window.navigator.vibrate) window.navigator.vibrate(50);
       }, 1000);
     }, { passive: false });
 
@@ -3467,7 +3551,7 @@
       // Periodic check for daily reset (handles midnight transition while app is open)
       const resetTime = state.settings.resetTime || '00:00';
       const [rHH, rMM] = resetTime.split(':').map(Number);
-      
+
       const now = new Date();
       const currentCycleDate = getCycleDate(resetTime, now);
       if (state.lastActiveDate !== currentCycleDate) {
@@ -3516,7 +3600,7 @@
         night.setDate(night.getDate() + 1);
       }
       night.setHours(rHH, rMM, 0, 0);
-      
+
       const diff = night - now;
       const hh = Math.floor(diff / 1000 / 60 / 60);
       const mm = Math.floor((diff / 1000 / 60) % 60);
@@ -3602,7 +3686,7 @@
         hint.style.setProperty('--hint-arrow-bottom', '-6px');
         hint.classList.add('hint-top');
       }
-      
+
       // Remove hint when user interacts with target
       target.addEventListener('input', () => {
         if (currentTourStep === 2) {
@@ -3658,10 +3742,8 @@
         document.getElementById('btn-export').classList.remove('save-pulse');
         window._lastAutoSave = new Date();
 
-        // Trigger cloud sync if enabled
-        if (state.settings.cloudSync && state.settings.cloudAutoSync) {
-          syncToCloud();
-        }
+        window._lastAutoSave = new Date();
+
 
         // Visual feedback
         const btn = document.getElementById('btn-export');
@@ -3706,7 +3788,17 @@
         state.tasks = imported.tasks || [];
         state.projects = imported.projects || [];
         state.generalCollapsed = imported.generalCollapsed || {};
+
+        // Capture local-only credentials BEFORE merging settings
+        const currentToken = state.settings.cloudToken;
+        const currentGistId = state.settings.cloudGistId;
+        
         state.settings = { ...state.settings, ...(imported.settings || {}) };
+        
+        // Unconditionally restore the local credentials
+        state.settings.cloudToken = currentToken;
+        state.settings.cloudGistId = currentGistId;
+
         state.lastActiveDate = imported.lastActiveDate || today();
         performDailyReset(state);
         save(state);
@@ -3758,7 +3850,13 @@
           state.tasks = imported.tasks || [];
           state.projects = imported.projects || [];
           state.generalCollapsed = imported.generalCollapsed || {};
+
+          const localToken = state.settings.cloudToken;
+          const localGistId = state.settings.cloudGistId;
           state.settings = { ...state.settings, ...(imported.settings || {}) };
+          state.settings.cloudToken = localToken;
+          state.settings.cloudGistId = localGistId;
+
           state.lastActiveDate = imported.lastActiveDate || today();
           performDailyReset(state);
           save(state);
