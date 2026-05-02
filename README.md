@@ -33,7 +33,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🔄 **Smart Reset**: Automatically distinguishes between daily habits and one-off tasks. Now operates in real-time (no refresh needed at midnight) and intelligently refreshes imported legacy data.
 - 🔁 **Interactive Toggle**: Click the `↻` icon on any task to switch between Recurring and One-off.
 - ⏰ **Reset Countdown**: Live "Next Reset" timer in the header shows exactly when the pool will refresh.
-- 🧘 **Zen Breath**: Interface elements subtly breathe to feel alive (Toggleable in Settings).
+- 🧘 **Zen Breath**: Subtle, rhythmic UI pulse on the timer and active tab to make the app feel alive.
 - 🌙 **Dark Mode**: Sleek dark theme that persists across sessions.
 - 🌓 **Dynamic Theme**: Automatically switches between light and dark mode based on the time of day (Default).
 - ⚙️ **Settings Modal**: Premium glassmorphic panel to control all app behaviors.
@@ -218,12 +218,13 @@ Persisted in the `settings` object.
 
 ## Settings Modal
 Accessed via the ⚙️ icon. Controls:
-- **Zen Breath**: Toggle rhythmic UI breathing.
-- **Night Shift**: Toggle late-night task dimming.
-- **Auto-Save**: Toggle periodic disk syncing (10m default).
-- **Save Pulse**: Visual reminder for unsaved changes.
-- **Focus Pings**: Pomodoro-style reminders.
-- **Reset Time**: Customizable daily refresh time.
+- **Zen Breath**: Toggle rhythmic UI breathing on the timer and active tab.
+- **Night Shift**: Automatically dims tasks that are NOT "In Progress" late at night (10 PM - 5 AM) for extreme focus.
+- **Auto-Save**: Periodically syncs changes to your active disk file (default 10m).
+- **Save Pulse**: The Save button gently glows blue when you have unsaved changes.
+- **Focus Pings**: Periodic green glow/pulse on your "In Progress" tasks to keep you on track.
+- **Browser Notifications**: Native desktop alerts for focus pings.
+- **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM for night owls).
 
 ---
 

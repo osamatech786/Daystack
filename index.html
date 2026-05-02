@@ -72,7 +72,30 @@
 
     .zen-mode .zen-element {
       animation: zenBreath 8s ease-in-out infinite;
-      display: inline-block;
+    }
+
+    /* Night Shift Dimming */
+    .night-shift-active .task:not(.in-progress-view) {
+      opacity: 0.3;
+      filter: grayscale(0.5);
+      transition: opacity 2s, filter 2s;
+    }
+
+    .night-shift-active .task:hover {
+      opacity: 0.8;
+      filter: grayscale(0);
+    }
+
+    /* Focus Ping Glow */
+    @keyframes focusPing {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); transform: scale(1); }
+      50% { box-shadow: 0 0 20px 10px rgba(34, 197, 94, 0); transform: scale(1.02); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); transform: scale(1); }
+    }
+
+    .focus-ping {
+      animation: focusPing 2s ease-out 3; /* Pulse 3 times */
+      border-color: var(--pri-green) !important;
     }
 
     html,
@@ -1464,6 +1487,108 @@
     </div>
   </div>
 
+  <!-- Settings Modal -->
+  <div id="settings-overlay" class="modal-overlay">
+    <div class="modal-card">
+      <h2><span class="zen-element">🧘</span> Settings</h2>
+      
+      <div class="settings-section">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Zen Breath</div>
+            <div class="settings-desc">Interface elements subtly breathe to feel alive.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-zen-breath">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Night Shift Dimming</div>
+            <div class="settings-desc">Dim inactive tasks late at night (10PM - 5AM).</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-night-shift">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Auto-Save to File</div>
+            <div class="settings-desc">Periodically write changes to your active file.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-auto-save">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Auto-Save Frequency</div>
+            <div class="settings-desc">Minutes between each save (default: 10).</div>
+          </div>
+          <input type="number" id="set-auto-save-freq" class="settings-input" min="1" max="60">
+        </div>
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Save Button Pulse</div>
+            <div class="settings-desc">Gently pulse the save button when changes are pending.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-save-pulse">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Pomodoro Focus Pings</div>
+            <div class="settings-desc">Gentle glow/nudge on active tasks periodically.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-focus-pings">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Focus Ping Frequency</div>
+            <div class="settings-desc">Minutes between focus pings (default: 25).</div>
+          </div>
+          <input type="number" id="set-focus-freq" class="settings-input" min="1" max="120">
+        </div>
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Browser Notifications</div>
+            <div class="settings-desc">Allow desktop alerts for focus pings.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-notifications">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-row">
+          <div class="settings-info">
+            <div class="settings-label">Daily Reset Time</div>
+            <div class="settings-desc">Time when recurring tasks refresh (HH:mm).</div>
+          </div>
+          <input type="time" id="set-reset-time" class="settings-input" style="width: 100px;">
+        </div>
+      </div>
+
+      <button class="modal-close" onclick="toggleSettings()">Close & Apply</button>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = 'taskTracker_v1';
     const today = () => {
@@ -1556,6 +1681,9 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       isDirty = true;
       document.getElementById('save-dirty').classList.add('show');
+      if (state.settings.savePulse) {
+        document.getElementById('btn-export').classList.add('save-pulse');
+      }
     }
 
     let state = load();
@@ -1628,12 +1756,14 @@
       <button class="sub-del-btn" data-action="delete-sub" data-tid="${task.id}" data-sid="${s.id}" title="Delete subtask">×</button>
     </div>
   `).join('');
+      
+      const inProgressClass = isInProgress(task) ? 'in-progress-view' : '';
 
       const addSubBtn = view !== 'done' ? `<button class="add-sub-btn" data-action="add-sub" data-tid="${task.id}" data-view="${view}" title="Add a subtask to this task">+ Add subtask</button>` : '';
       const undoBtn = showUndo ? `<button class="undo-btn" data-action="undo" data-tid="${task.id}" title="Move task back to In Progress">↩ undo</button>` : '';
 
       return `
-    <div class="task" data-id="${task.id}">
+    <div class="task ${inProgressClass}" data-id="${task.id}">
       <div class="task-row">
         <div class="pri-picker">
           <span class="pri-dot pri-${task.priority || 'none'}" data-action="toggle-pri" data-tid="${task.id}" data-view="${view}" title="Click to set priority"></span>
@@ -1784,10 +1914,16 @@
     function updateZenBreath() {
       const isEnabled = state.settings.zenBreath;
       document.body.classList.toggle('zen-mode', isEnabled);
+      
+      // Remove from all first
+      document.querySelectorAll('.zen-element').forEach(el => {
+        if (!el.classList.contains('logo')) el.classList.remove('zen-element');
+      });
+
       if (isEnabled) {
         document.getElementById('reset-timer').classList.add('zen-element');
-      } else {
-        document.getElementById('reset-timer').classList.remove('zen-element');
+        const activeTab = document.querySelector('.tab.active');
+        if (activeTab) activeTab.classList.add('zen-element');
       }
     }
 
@@ -2296,12 +2432,36 @@
         state.settings.resetTime = document.getElementById('set-reset-time').value || '00:00';
         
         overlay.classList.remove('show');
+        if (state.settings.notifications) requestNotificationPermission();
         save(state);
         renderAll();
       }
     }
 
     document.getElementById('btn-settings').addEventListener('click', toggleSettings);
+
+    function triggerFocusPing() {
+      // Find tasks in In Progress view and add animation
+      const inProgressTasks = document.querySelectorAll('#col-progress .task');
+      inProgressTasks.forEach(t => {
+        t.classList.remove('focus-ping');
+        void t.offsetWidth; // trigger reflow
+        t.classList.add('focus-ping');
+      });
+
+      if (state.settings.notifications && Notification.permission === 'granted') {
+        new Notification('Daystack Focus Nudge', {
+          body: "Time to check in on your active tasks!",
+          icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧘</text></svg>'
+        });
+      }
+    }
+
+    function requestNotificationPermission() {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
 
     // Search input handler
     document.getElementById('search-tasks').addEventListener('input', e => {
@@ -2596,14 +2756,54 @@
     // ── Boot ────────────────────────────────────────────────────
     function updateResetTimer() {
       // Periodic check for daily reset (handles midnight transition while app is open)
-      if (state.lastActiveDate !== today()) {
-        performDailyReset(state);
-        renderAll();
+      const resetTime = state.settings.resetTime || '00:00';
+      const [rHH, rMM] = resetTime.split(':').map(Number);
+      
+      const now = new Date();
+      const todayStr = today();
+      
+      if (state.lastActiveDate !== todayStr) {
+        // If it's a new day, we check if we've passed the reset threshold
+        const resetThreshold = new Date();
+        resetThreshold.setHours(rHH, rMM, 0, 0);
+        
+        if (now >= resetThreshold) {
+          performDailyReset(state);
+          renderAll();
+        }
       }
 
-      const now = new Date();
+      // Auto-save logic
+      if (state.settings.autoSave && isDirty) {
+        if (!window._lastAutoSave) window._lastAutoSave = now;
+        const diffMins = (now - window._lastAutoSave) / 1000 / 60;
+        if (diffMins >= (state.settings.autoSaveFreq || 10)) {
+          saveToFile();
+          window._lastAutoSave = now;
+        }
+      }
+
+      // Night Shift logic (10 PM - 5 AM)
+      const hour = now.getHours();
+      const isLate = hour >= 22 || hour < 5;
+      document.body.classList.toggle('night-shift-active', state.settings.nightShift && isLate);
+
+      // Focus Pings logic
+      if (state.settings.focusPings) {
+        if (!window._lastFocusPing) window._lastFocusPing = now;
+        const diffMins = (now - window._lastFocusPing) / 1000 / 60;
+        if (diffMins >= (state.settings.focusFreq || 25)) {
+          triggerFocusPing();
+          window._lastFocusPing = now;
+        }
+      }
+
       const night = new Date();
-      night.setHours(24, 0, 0, 0);
+      if (now.getHours() >= rHH && now.getMinutes() >= rMM) {
+        night.setDate(night.getDate() + 1);
+      }
+      night.setHours(rHH, rMM, 0, 0);
+      
       const diff = night - now;
       const hh = Math.floor(diff / 1000 / 60 / 60);
       const mm = Math.floor((diff / 1000 / 60) % 60);
@@ -2735,6 +2935,8 @@
 
         isDirty = false;
         document.getElementById('save-dirty').classList.remove('show');
+        document.getElementById('btn-export').classList.remove('save-pulse');
+        window._lastAutoSave = new Date();
 
         // Visual feedback
         const btn = document.getElementById('btn-export');
