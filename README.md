@@ -164,7 +164,7 @@ To enable cross-device sync, follow these steps:
 Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most intelligent features:
 - **Real-time Reset**: Detects midnight transitions instantly.
 - **Zen Breath**: Synchronizes the meditative UI pulse.
-- **Auto-Save**: Manages background disk syncing.
+- **Auto-Save**: Manages background disk syncing. Now supports **Instant Save** (frequency 0) for truly real-time disk persistence.
 - **Focus Pings**: Triggers periodic visual nudges.
 - **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed). Now features **Conflict Detection** to prevent accidental overwrites when enabling sync on new devices.
 - **Intelligent Conflict Resolution**: When enabling sync, Daystack verifies if a remote Gist already exists. If it does, and the local device has no sync history, it halts the auto-sync to protect your cloud data, allowing you to choose whether to **Restore** or **Sync**.
@@ -173,7 +173,7 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 Accessed via the ⚙️ icon. Controls:
 - **Zen Breath**: Toggle rhythmic UI breathing.
 - **Night Shift**: Dims inactive tasks late at night (10 PM - 5 AM).
-- **Auto-Save**: Periodically syncs to your disk file.
+- **Auto-Save**: Periodically syncs to your disk file (0 = Instant real-time saving).
 - **Focus Pings**: Periodic glow on active tasks.
 - **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM).
 - **Cloud Sync Frequency**: Control how often background syncs occur (0 = Instant).

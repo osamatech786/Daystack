@@ -1768,7 +1768,7 @@
               <div class="settings-label">Auto-Save Frequency</div>
               <div class="settings-desc">Minutes between each save (default: 10).</div>
             </div>
-            <input type="number" id="set-auto-save-freq" class="settings-input" min="1" max="60">
+            <input type="number" id="set-auto-save-freq" class="settings-input" min="0" max="60">
           </div>
           <div class="settings-row">
             <div class="settings-info">
@@ -1968,6 +1968,9 @@
       }
       if (!skipCloud && state.settings.cloudSync && state.settings.cloudAutoSync && (state.settings.cloudSyncFreq === 0 || state.settings.cloudSyncFreq === '0')) {
         syncToCloud();
+      }
+      if (state.settings.autoSave && (state.settings.autoSaveFreq === 0 || state.settings.autoSaveFreq === '0')) {
+        saveToFile();
       }
     }
 
@@ -3055,7 +3058,8 @@
         setBool('nightShift', document.getElementById('set-night-shift').checked);
         setBool('autoSave', document.getElementById('set-auto-save').checked);
         
-        const newAutoSaveFreq = parseInt(document.getElementById('set-auto-save-freq').value) || 10;
+        let newAutoSaveFreq = parseInt(document.getElementById('set-auto-save-freq').value);
+        if (isNaN(newAutoSaveFreq)) newAutoSaveFreq = 10;
         if (state.settings.autoSaveFreq !== newAutoSaveFreq) { state.settings.autoSaveFreq = newAutoSaveFreq; changed = true; }
         
         setBool('savePulse', document.getElementById('set-save-pulse').checked);
