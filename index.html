@@ -17,8 +17,10 @@
       --pri-yellow: #eab308;
       --pri-blue: #3b82f6;
       --pri-green: #22c55e;
-      --pri-none: #9ca3af;
       --radius: 6px;
+      --bg-glow-1: #60a5fa;
+      --bg-glow-2: #f472b6;
+      --bg-glow-3: #fefce8;
     }
 
     [data-theme="dark"] {
@@ -26,6 +28,9 @@
       --surface: #2a2a2a;
       --text: #f0f0f0;
       --border: #404040;
+      --bg-glow-1: #3b82f6;
+      --bg-glow-2: #d946ef;
+      --bg-glow-3: #111827;
     }
 
     * {
@@ -101,6 +106,43 @@
       animation: zenBreath 8s ease-in-out infinite;
     }
 
+    /* Blazing Fast Breathing Ripple Effect */
+    .bg-ripple-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 100vmax;
+      height: 100vmax;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+      pointer-events: none;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .ripple {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle, var(--bg-glow-1) 0%, transparent 70%);
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    .zen-mode .ripple {
+      animation: zenRipple 8s ease-in-out infinite;
+    }
+
+    .zen-mode .ripple:nth-child(2) {
+      animation-delay: 4s;
+      background: radial-gradient(circle, var(--bg-glow-2) 0%, transparent 70%);
+    }
+
+    @keyframes zenRipple {
+      0% { transform: scale(0.4); opacity: 0; }
+      50% { opacity: 0.8; }
+      100% { transform: scale(2.0); opacity: 0; }
+    }
+
     /* Night Shift Dimming */
     .night-shift-active .task:not(.in-progress-view) {
       opacity: 0.3;
@@ -144,7 +186,7 @@
 
     body {
       font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
+      background: transparent;
       color: var(--text);
       min-height: 100vh;
       padding: 24px 16px;
@@ -1604,6 +1646,10 @@
 </head>
 
 <body>
+  <div class="bg-ripple-container" aria-hidden="true">
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+  </div>
   <div class="app-wrap">
     <div id="app">
       <div class="header-row">

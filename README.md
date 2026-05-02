@@ -33,7 +33,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🔄 **Smart Reset**: Automatically distinguishes between daily habits and one-off tasks. Now operates in real-time (no refresh needed at midnight) and intelligently refreshes imported legacy data.
 - 🔁 **Interactive Toggle**: Click the `↻` icon on any task to switch between Recurring and One-off.
 - ⏰ **Reset Countdown**: Live "Next Reset" timer in the header shows exactly when the pool will refresh.
-- 🧘 **Zen Breath**: Subtle, rhythmic UI pulse on the timer and active tab to make the app feel alive.
+- 🧘 **Zen Breath**: A beautiful, rhythmic water ripple background effect that pulses from the center, making the entire app feel alive and calm.
 - 🌙 **Dark Mode**: Sleek dark theme that persists across sessions.
 - 🌓 **Dynamic Theme**: Automatically switches between light and dark mode based on the time of day (Default).
 - ⚙️ **Settings Modal**: Redesigned premium glassmorphic panel with sticky navigation and enhanced aesthetics for effortless control.
@@ -163,7 +163,7 @@ To enable cross-device sync, follow these steps:
 ### The Heartbeat 💓
 Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most intelligent features:
 - **Real-time Reset**: Detects midnight transitions instantly.
-- **Zen Breath**: Synchronizes the meditative UI pulse.
+- **Zen Breath**: Synchronizes the meditative UI pulse and the ambient "Water Ripple" background.
 - **Auto-Save**: Manages background disk syncing. Now supports **Instant Save** (frequency 0) for truly real-time disk persistence.
 - **Focus Pings**: Triggers periodic visual nudges.
 - **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed). Now features **Conflict Detection** to prevent accidental overwrites when enabling sync on new devices.
