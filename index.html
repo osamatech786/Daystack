@@ -1917,13 +1917,29 @@
         return;
       }
 
-      // Conflict Check: Don't auto-sync if we know remote is newer
-      if (!force && state.settings.cloudLastSync) {
-        const localSynced = new Date(state.settings.cloudLastSync);
+      // Conflict Check: Don't auto-sync if we don't know the remote state or if it's newer
+      if (!force) {
+        // If we don't have remote info yet, fetch it
+        if (!window._remoteLastUpdated && gistId) {
+          await checkForRemoteUpdates();
+        }
+
         const remoteUpdated = window._remoteLastUpdated ? new Date(window._remoteLastUpdated) : null;
-        if (remoteUpdated && remoteUpdated > localSynced) {
-          updateCloudStatus('Conflict: Remote newer', 'cloud-error');
-          return;
+        const localSynced = state.settings.cloudLastSync ? new Date(state.settings.cloudLastSync) : null;
+
+        if (remoteUpdated) {
+          if (!localSynced) {
+            // Remote exists but this device has never synced with it. 
+            // We must NOT auto-overwrite it.
+            updateCloudStatus('Conflict: Remote exists', 'cloud-error');
+            console.warn('Cloud Sync: Remote Gist exists but local state has no sync history. Auto-sync aborted to prevent overwrite.');
+            return;
+          }
+          if (remoteUpdated > localSynced) {
+            // Remote has been updated since our last sync
+            updateCloudStatus('Conflict: Remote newer', 'cloud-error');
+            return;
+          }
         }
       }
 
@@ -1947,6 +1963,17 @@
           const gistInput = document.getElementById('set-cloud-gist-id');
           if (gistInput) gistInput.value = gistId;
           save(state, true, true);
+          
+          // After discovery, if not forced, we should check for conflict again 
+          // because we now have a gistId we didn't have before.
+          if (!force) {
+            await checkForRemoteUpdates();
+            const remoteUpdated = window._remoteLastUpdated ? new Date(window._remoteLastUpdated) : null;
+            if (remoteUpdated) {
+              updateCloudStatus('Conflict: Remote exists', 'cloud-error');
+              return;
+            }
+          }
         }
       }
 
@@ -2058,6 +2085,7 @@
         state.settings.cloudToken = localToken;
         state.settings.cloudGistId = localGistId;
         state.settings.cloudLastSync = gist.updated_at; // Crucial for heartbeat check
+        window._remoteLastUpdated = gist.updated_at; // Update global state too
         state.lastActiveDate = imported.lastActiveDate || today();
         
         performDailyReset(state);
@@ -2917,36 +2945,58 @@
 
         overlay.classList.add('show');
       } else {
-        // Save inputs to state
-        state.settings.zenBreath = document.getElementById('set-zen-breath').checked;
-        state.settings.nightShift = document.getElementById('set-night-shift').checked;
-        state.settings.autoSave = document.getElementById('set-auto-save').checked;
-        state.settings.autoSaveFreq = parseInt(document.getElementById('set-auto-save-freq').value);
-        if (isNaN(state.settings.autoSaveFreq)) state.settings.autoSaveFreq = 10;
-        state.settings.savePulse = document.getElementById('set-save-pulse').checked;
-        state.settings.focusPings = document.getElementById('set-focus-pings').checked;
-        state.settings.focusFreq = parseInt(document.getElementById('set-focus-freq').value) || 25;
-        state.settings.notifications = document.getElementById('set-notifications').checked;
-        state.settings.resetTime = document.getElementById('set-reset-time').value || '00:00';
+        // Save inputs to state, tracking if anything meaningful changed
+        let changed = false;
+        const setBool = (key, val) => { if (state.settings[key] !== val) { state.settings[key] = val; changed = true; } };
+        const setVal = (key, val) => { if (state.settings[key] !== val) { state.settings[key] = val; changed = true; } };
+
+        setBool('zenBreath', document.getElementById('set-zen-breath').checked);
+        setBool('nightShift', document.getElementById('set-night-shift').checked);
+        setBool('autoSave', document.getElementById('set-auto-save').checked);
+        
+        const newAutoSaveFreq = parseInt(document.getElementById('set-auto-save-freq').value) || 10;
+        if (state.settings.autoSaveFreq !== newAutoSaveFreq) { state.settings.autoSaveFreq = newAutoSaveFreq; changed = true; }
+        
+        setBool('savePulse', document.getElementById('set-save-pulse').checked);
+        setBool('focusPings', document.getElementById('set-focus-pings').checked);
+        
+        const newFocusFreq = parseInt(document.getElementById('set-focus-freq').value) || 25;
+        if (state.settings.focusFreq !== newFocusFreq) { state.settings.focusFreq = newFocusFreq; changed = true; }
+        
+        setBool('notifications', document.getElementById('set-notifications').checked);
+        setVal('resetTime', document.getElementById('set-reset-time').value || '00:00');
 
         // Cloud Sync save
         const wasSyncEnabled = state.settings.cloudSync;
-        state.settings.cloudSync = document.getElementById('set-cloud-sync').checked;
-        state.settings.cloudToken = document.getElementById('set-cloud-token').value.trim();
-        state.settings.cloudGistId = document.getElementById('set-cloud-gist-id').value.trim();
-        state.settings.cloudSyncFreq = parseInt(document.getElementById('set-cloud-sync-freq').value) || 0;
-        state.settings.cloudRefreshOnReset = document.getElementById('set-cloud-refresh-reset').checked;
-        
-        overlay.classList.remove('show');
-        if (state.settings.notifications) requestNotificationPermission();
-        save(state);
+        const oldGistId = state.settings.cloudGistId;
+        const oldToken = state.settings.cloudToken;
 
-        // If sync was just enabled OR changed to instant, trigger a sync
-        if (state.settings.cloudSync && (!wasSyncEnabled || state.settings.cloudSyncFreq === 0)) {
-          syncToCloud();
+        setBool('cloudSync', document.getElementById('set-cloud-sync').checked);
+        setVal('cloudToken', document.getElementById('set-cloud-token').value.trim());
+        setVal('cloudGistId', document.getElementById('set-cloud-gist-id').value.trim());
+        
+        const newCloudSyncFreq = parseInt(document.getElementById('set-cloud-sync-freq').value) || 0;
+        if (state.settings.cloudSyncFreq !== newCloudSyncFreq) { state.settings.cloudSyncFreq = newCloudSyncFreq; changed = true; }
+        
+        setBool('cloudRefreshOnReset', document.getElementById('set-cloud-refresh-reset').checked);
+        
+        // If Gist ID or Token changed, we should clear the last sync timestamp to force a fresh conflict check
+        if (state.settings.cloudGistId !== oldGistId || state.settings.cloudToken !== oldToken) {
+          state.settings.cloudLastSync = '';
+          window._remoteLastUpdated = '';
         }
 
-        renderAll();
+        overlay.classList.remove('show');
+        if (state.settings.notifications) requestNotificationPermission();
+        
+        if (changed) {
+          save(state);
+          // If sync was just enabled OR changed to instant, trigger a sync
+          if (state.settings.cloudSync && (!wasSyncEnabled || state.settings.cloudSyncFreq === 0)) {
+            syncToCloud();
+          }
+          renderAll();
+        }
       }
     }
 

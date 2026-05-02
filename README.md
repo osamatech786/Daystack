@@ -166,7 +166,8 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 - **Zen Breath**: Synchronizes the meditative UI pulse.
 - **Auto-Save**: Manages background disk syncing.
 - **Focus Pings**: Triggers periodic visual nudges.
-- **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed).
+- **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed). Now features **Conflict Detection** to prevent accidental overwrites when enabling sync on new devices.
+- **Intelligent Conflict Resolution**: When enabling sync, Daystack verifies if a remote Gist already exists. If it does, and the local device has no sync history, it halts the auto-sync to protect your cloud data, allowing you to choose whether to **Restore** or **Sync**.
 
 ### Settings Modal
 Accessed via the ⚙️ icon. Controls:
@@ -175,7 +176,9 @@ Accessed via the ⚙️ icon. Controls:
 - **Auto-Save**: Periodically syncs to your disk file.
 - **Focus Pings**: Periodic glow on active tasks.
 - **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM).
+- **Cloud Sync Frequency**: Control how often background syncs occur (0 = Instant).
 - **Reset Gist**: Manually clear Gist history and start a fresh cloud backup.
+- **Save Optimizations**: Settings are now saved only when modified, preventing unnecessary sync cycles.
 
 ### Persistence & Portability
 - **Native File Sync**: Use the File System Access API to save directly to your computer.
