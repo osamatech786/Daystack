@@ -117,6 +117,10 @@ Each column has a filter bar above the task list:
 - **Cloud Backup & Sync**: Free, user-controlled cloud backup via GitHub Gists.
 - **Radical Portability**: Export/Import your entire state as a single JSON file.
 
+> [!CAUTION]
+> **Keep your backup files secure!** 
+> Your `daystack-tasks.json` backup file contains your GitHub Personal Access Token. If someone gains access to this file, they can restore your data and access your private task list. Never share your backup files publicly.
+
 ---
 
 ## ☁️ Cloud Sync & Security
