@@ -192,9 +192,9 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 ## Daily Reset (Intelligent)
 
 The app compares `lastActiveDate` vs today's date (`YYYY-MM-DD`) and triggers a reset in three scenarios:
-1. **On Page Load**: Standard boot-up check.
-2. **At Midnight (Real-time)**: If the app is left open, a periodic check (every 60s) detects the date change and refreshes the pool instantly.
-3. **On Import**: Loading a file from a previous day automatically triggers a reset for today's context.
+1. **On Page Load**: Standard boot-up check (respects your custom `resetTime` threshold).
+2. **During Focus (Real-time)**: If the app is left open, a periodic check (every 60s) detects when the `resetTime` threshold is crossed and refreshes the pool instantly.
+3. **On Import**: Loading a file from a previous cycle automatically triggers a reset for today's context.
 
 ### Reset Rules:
 
@@ -236,7 +236,7 @@ Accessed via the ⚙️ icon. Controls:
 - **Save Pulse**: The Save button gently glows blue when you have unsaved changes.
 - **Focus Pings**: Periodic green glow/pulse on your "In Progress" tasks to keep you on track.
 - **Browser Notifications**: Native desktop alerts for focus pings.
-- **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM for night owls).
+- **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM for night owls). The app maintains "Focus Day" integrity, meaning it won't reset until this threshold is reached, even if you refresh the page after midnight.
 
 ---
 

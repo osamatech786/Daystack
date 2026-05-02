@@ -1591,10 +1591,15 @@
 
   <script>
     const STORAGE_KEY = 'taskTracker_v1';
-    const today = () => {
-      const d = new Date();
+    const getCycleDate = (resetTime = '00:00', date = new Date()) => {
+      const [rHH, rMM] = resetTime.split(':').map(Number);
+      const d = new Date(date);
+      if (d.getHours() < rHH || (d.getHours() === rHH && d.getMinutes() < rMM)) {
+        d.setDate(d.getDate() - 1);
+      }
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     };
+    const today = () => getCycleDate(); // Default calendar date for simple checks
     let fileHandle = null;
     let isDirty = false;
     let searchQuery = '';
@@ -1655,7 +1660,10 @@
     }
 
     function performDailyReset(data) {
-      if (data.lastActiveDate !== today()) {
+      const resetTime = (data.settings && data.settings.resetTime) || '00:00';
+      const currentCycleDate = getCycleDate(resetTime);
+      
+      if (data.lastActiveDate !== currentCycleDate) {
         // Daily reset: 
         // 1. Reset daily tasks (return to For Today)
         // 2. Keep one-off tasks that are NOT done
@@ -1671,7 +1679,7 @@
             }
             return t;
           });
-        data.lastActiveDate = today();
+        data.lastActiveDate = currentCycleDate;
         save(data);
       }
       return data;
@@ -1687,6 +1695,7 @@
     }
 
     let state = load();
+    performDailyReset(state); // Ensure correct reset state on boot
 
     const filterState = {
       today: { pri: 'all', status: 'all', sort: false },
@@ -2760,17 +2769,10 @@
       const [rHH, rMM] = resetTime.split(':').map(Number);
       
       const now = new Date();
-      const todayStr = today();
-      
-      if (state.lastActiveDate !== todayStr) {
-        // If it's a new day, we check if we've passed the reset threshold
-        const resetThreshold = new Date();
-        resetThreshold.setHours(rHH, rMM, 0, 0);
-        
-        if (now >= resetThreshold) {
-          performDailyReset(state);
-          renderAll();
-        }
+      const currentCycleDate = getCycleDate(resetTime, now);
+      if (state.lastActiveDate !== currentCycleDate) {
+        performDailyReset(state);
+        renderAll();
       }
 
       // Auto-save logic
