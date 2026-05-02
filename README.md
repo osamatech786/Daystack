@@ -42,6 +42,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars to maximize vertical space.
 - ↕️ **Master Toggle**: Expand or collapse all groups in a tab with a single click.
 - 🧘 **Group Hierarchy**: Distinct, tinted group headers with clear visual separation for better structure.
+- 💓 **The Heartbeat**: A silent 1-minute engine that powers all real-time logic (Reset, Auto-Save, Zen Breath, and Focus Pings).
 - ✨ **Interactive Onboarding**: New users are guided by a premium, glassmorphic tour that highlights core features and helps create the first task.
 - 📱 **Touch Gestures**: Full mobile support for renaming via **Double-Tap** or **Long-Press** on any task or group.
 
@@ -174,6 +175,17 @@ Each column has a filter bar above the task list:
 - **In Progress**: Un-strikes all tasks (moves them back to For Today).
 - **Done**: Deletes all completed tasks permanently.
 - **Recurring**: Deletes all daily tasks from the master pool.
+
+---
+
+## The Heartbeat 💓
+
+Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most intelligent features without sacrificing performance:
+
+- **Real-time Reset**: Detects midnight transitions instantly while the app is open.
+- **Zen Breath**: Synchronizes the meditative UI pulse.
+- **Auto-Save**: Manages background disk syncing.
+- **Focus Pings**: Triggers periodic visual and notification nudges.
 
 ---
 
