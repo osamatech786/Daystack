@@ -1972,6 +1972,31 @@
 
   <script>
     const STORAGE_KEY = 'taskTracker_v1';
+
+    // Service Worker Registration for Mobile Notifications (Inlined to keep app as a Single File)
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('notificationclick', function(event) {
+          event.notification.close();
+          event.waitUntil(
+            clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+              if (clientList.length > 0) {
+                let client = clientList[0];
+                for (let i = 0; i < clientList.length; i++) {
+                  if (clientList[i].focused) { client = clientList[i]; }
+                }
+                return client.focus();
+              }
+              return clients.openWindow('/');
+            })
+          );
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl).catch(err => console.warn('SW registration failed:', err));
+    }
+
     const getCycleDate = (resetTime = '00:00', date = new Date()) => {
       const [rHH, rMM] = resetTime.split(':').map(Number);
       const d = new Date(date);
@@ -3313,16 +3338,37 @@
       });
 
       if (state.settings.notifications && Notification.permission === 'granted') {
-        new Notification('Daystack Focus Nudge', {
+        const title = 'Daystack Focus Nudge';
+        const options = {
           body: "Time to check in on your active tasks!",
-          icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧘</text></svg>'
-        });
+          icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧘</text></svg>',
+          tag: 'focus-nudge',
+          renotify: true
+        };
+
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(registration => {
+            registration.showNotification(title, options);
+          }).catch(err => {
+            console.warn('Notification failed via SW, falling back:', err);
+            new Notification(title, options);
+          });
+        } else {
+          new Notification(title, options);
+        }
       }
     }
 
     function requestNotificationPermission() {
       if (Notification.permission === 'default') {
-        Notification.requestPermission();
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted' && 'serviceWorker' in navigator) {
+            // Wake up SW
+            navigator.serviceWorker.ready.then(reg => {
+              console.log('Notifications enabled and SW ready');
+            });
+          }
+        });
       }
     }
 

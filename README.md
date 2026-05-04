@@ -46,6 +46,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 💓 **The Heartbeat**: A silent 1-minute engine that powers all real-time logic (Reset, Auto-Save, Zen Breath, and Focus Pings).
 - ✨ **Interactive Onboarding**: New users are guided by a premium, glassmorphic tour that highlights core features and helps create the first task.
 - 📱 **Touch Gestures**: Full mobile support for renaming via **Double-Tap** or **Long-Press** on any task or group.
+- 🔔 **Cross-Platform Notifications**: Browser notifications now work seamlessly on both Desktop and Phone (Chrome for Android).
 
 ## Tabs
 
@@ -165,7 +166,7 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 - **Real-time Reset**: Detects midnight transitions instantly.
 - **Zen Breath**: Synchronizes the meditative UI pulse and the ambient "Water Ripple" background.
 - **Auto-Save**: Manages background disk syncing. Now supports **Instant Save** (frequency 0) for truly real-time disk persistence.
-- **Focus Pings**: Triggers periodic visual nudges.
+- **Focus Pings**: Triggers periodic visual nudges and cross-platform browser notifications.
 - **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed). Now features **Conflict Detection** to prevent accidental overwrites when enabling sync on new devices.
 - **Intelligent Conflict Resolution & Auto-Pull**: Follows industry best practices by silently auto-pulling background updates when the cloud is newer and you have no unsaved local changes. If you do have local changes, it safely pauses sync and warns of the conflict to prevent data loss. It also halts auto-sync on new devices if a remote Gist exists but local sync history is missing.
 
@@ -174,7 +175,7 @@ Accessed via the ⚙️ icon. Controls:
 - **Zen Breath**: Toggle rhythmic UI breathing.
 - **Night Shift**: Dims inactive tasks late at night (10 PM - 5 AM).
 - **Auto-Save**: Periodically syncs to your disk file (0 = Instant real-time saving).
-- **Focus Pings**: Periodic glow on active tasks.
+- **Focus Pings**: Periodic glow on active tasks and browser notifications (Service Worker enabled for Chrome on Android).
 - **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM).
 - **Cloud Sync Frequency**: Control how often background syncs occur (0 = Instant).
 - **Reset Gist**: Manually clear Gist history and start a fresh cloud backup.
@@ -199,6 +200,7 @@ Accessed via the ⚙️ icon. Controls:
 - Double-tap or Long-press to rename tasks and groups.
 - Haptic feedback on touch interaction.
 - Responsive layout optimized for one-handed use.
+- Full support for browser notifications on Chrome for Android via inlined Service Worker.
 
 ---
 
