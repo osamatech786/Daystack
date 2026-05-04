@@ -38,7 +38,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🌓 **Dynamic Theme**: Automatically switches between light and dark mode based on the time of day (Default).
 - ⚙️ **Settings Modal**: Redesigned premium glassmorphic panel with sticky navigation and enhanced aesthetics for effortless control.
 - ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
-- ☁️ **Interactive Cloud**: Click/Touch the cloud icon in the header to trigger an instant sync (or as a shortcut to Cloud Settings).
+- ☁️ **Smart Cloud Sync**: Dedicated `☁↑` (Push) and `☁↓` (Fetch) buttons in the header for total control. Performs an intelligent conflict check before every sync to prevent data loss.
 - 🚀 **Blazing Fast**: Single-page architecture with zero external dependencies.
 - 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars to maximize vertical space.
 - ↕️ **Master Toggle**: Expand or collapse all groups in a tab with a single click.
@@ -167,8 +167,8 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 - **Zen Breath**: Synchronizes the meditative UI pulse and the ambient "Water Ripple" background.
 - **Auto-Save**: Manages background disk syncing. Now supports **Instant Save** (frequency 0) for truly real-time disk persistence.
 - **Focus Pings**: Triggers periodic visual nudges and cross-platform browser notifications.
-- **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed). Now features **Conflict Detection** to prevent accidental overwrites when enabling sync on new devices.
-- **Intelligent Conflict Resolution & Auto-Pull**: Follows industry best practices by silently auto-pulling background updates when the cloud is newer and you have no unsaved local changes. If you do have local changes, it safely pauses sync and warns of the conflict to prevent data loss. It also halts auto-sync on new devices if a remote Gist exists but local sync history is missing.
+- **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed). Now features **Smart Sync** with dedicated header buttons (`☁↑` and `☁↓`) and a **Conflict Dialog** to prevent accidental overwrites.
+- **Intelligent Conflict Resolution**: Follows industry best practices by silently auto-pulling background updates when the cloud is newer and you have no unsaved local changes. If you do have local changes, it safely pauses sync and warns of the conflict, offering you the choice to either Restore (Fetch) or Overwrite (Push).
 
 ### Settings Modal
 Accessed via the ⚙️ icon. Controls:

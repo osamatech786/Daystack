@@ -1680,10 +1680,11 @@
       <div class="search-wrap">
         <input type="text" class="search-input" id="search-tasks" placeholder="Search tasks, groups, or subtasks...">
         <div class="file-btns">
-          <div id="cloud-sync-status" class="cloud-status">
-            <span class="cloud-icon" id="cloud-icon">☁</span>
+          <div id="cloud-sync-status" class="cloud-status" title="Smart Sync (Push with Conflict Check)">
+            <span class="cloud-icon" id="cloud-icon">☁↑</span>
             <span id="cloud-text">Local Only</span>
           </div>
+          <button class="file-btn" id="btn-header-fetch" title="Fetch / Restore from Cloud" style="display: none;">☁↓</button>
           <div class="btn-wrap">
             <button class="file-btn" id="btn-export">Save</button>
             <div class="dirty-dot" id="save-dirty"></div>
@@ -1968,10 +1969,10 @@
               </label>
             </div>
             <div class="settings-btn-group">
-              <button class="settings-btn" id="btn-cloud-restore">Restore from Cloud</button>
+              <button class="settings-btn" id="btn-cloud-restore">☁↓ Restore from Cloud</button>
               <button class="settings-btn" id="btn-cloud-reset-gist"
                 title="Deletes current Gist and creates a fresh one to clear history">Reset Gist</button>
-              <button class="settings-btn pri" id="btn-cloud-sync">Sync Now</button>
+              <button class="settings-btn pri" id="btn-cloud-sync">☁↑ Sync Now</button>
             </div>
           </div>
         </div>
@@ -2325,6 +2326,11 @@
         return;
       }
 
+      if (isAuto && isCloudDirty) {
+        updateCloudStatus('Conflict: Remote newer', 'cloud-error');
+        return;
+      }
+
       if (!gistId) {
         if (!isAuto) updateCloudStatus('Discovering...', 'syncing');
         gistId = await discoverGist(token, state.settings.gistIdToDelete);
@@ -2391,6 +2397,30 @@
         console.error('Cloud Restore Error:', err);
         updateCloudStatus('Error: ' + err.message, 'cloud-error');
         if (!isAuto) alert('Failed to restore: ' + err.message);
+      }
+    }
+
+    async function handleCloudSync() {
+      if (!state.settings.cloudSync) return;
+
+      updateCloudStatus('Checking...', 'syncing');
+      await checkForRemoteUpdates();
+
+      const remoteUpdated = window._remoteLastUpdated ? new Date(window._remoteLastUpdated) : null;
+      const localSynced = state.settings.cloudLastSync ? new Date(state.settings.cloudLastSync) : new Date(0);
+
+      if (remoteUpdated && remoteUpdated > localSynced) {
+        if (confirm('Cloud has newer data. Would you like to RESTORE from cloud instead of pushing?\n\nOK = Restore (Fetch)\nCancel = Overwrite Cloud (Push)')) {
+          await syncFromCloud();
+          return;
+        }
+      }
+      syncToCloud(true);
+    }
+
+    async function handleCloudFetch() {
+      if (confirm('Fetch latest data from Cloud? This will overwrite your current local tasks and settings.')) {
+        await syncFromCloud();
       }
     }
 
@@ -2464,6 +2494,11 @@
       const statusEl = document.getElementById('cloud-sync-status');
       const iconEl = document.getElementById('cloud-icon');
       const textEl = document.getElementById('cloud-text');
+      const fetchBtn = document.getElementById('btn-header-fetch');
+
+      if (fetchBtn) {
+        fetchBtn.style.display = state.settings.cloudSync ? 'inline-block' : 'none';
+      }
 
       if (type === 'local') {
         statusEl.classList.remove('active');
@@ -3287,9 +3322,10 @@
 
         if (changed) {
           save(state);
+          checkForRemoteUpdates();
           // If sync was just enabled OR changed to instant, trigger a sync
           if (state.settings.cloudSync && (!wasSyncEnabled || state.settings.cloudSyncFreq === 0)) {
-            syncToCloud();
+            handleCloudSync();
           }
           renderAll();
         }
@@ -3301,7 +3337,7 @@
       document.getElementById('cloud-settings-fields').style.display = e.target.checked ? 'block' : 'none';
     });
 
-    document.getElementById('btn-cloud-sync').addEventListener('click', () => syncToCloud(true));
+    document.getElementById('btn-cloud-sync').addEventListener('click', () => handleCloudSync());
     document.getElementById('btn-cloud-reset-gist').addEventListener('click', async () => {
       if (confirm('Delete current Gist and create a fresh one? This clears your revision history but keeps your data.')) {
         const token = (state.settings.cloudToken || '').trim();
@@ -3323,16 +3359,16 @@
     });
     document.getElementById('cloud-sync-status').addEventListener('click', () => {
       if (state.settings.cloudSync) {
-        syncToCloud(true);
+        handleCloudSync();
       } else {
         toggleSettings();
       }
     });
-    document.getElementById('btn-cloud-restore').addEventListener('click', () => {
-      if (confirm('Restore from Cloud? This will overwrite your current local data.')) {
-        syncFromCloud();
-      }
+
+    document.getElementById('btn-header-fetch').addEventListener('click', () => {
+      handleCloudFetch();
     });
+    document.getElementById('btn-cloud-restore').addEventListener('click', () => handleCloudFetch());
 
     document.getElementById('btn-settings').addEventListener('click', toggleSettings);
 
