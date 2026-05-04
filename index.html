@@ -124,7 +124,10 @@
 
     .ripple {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: radial-gradient(circle, var(--bg-glow-1) 0%, transparent 70%);
       opacity: 0;
       will-change: transform, opacity;
@@ -140,9 +143,19 @@
     }
 
     @keyframes zenRipple {
-      0% { transform: scale(0.4); opacity: 0; }
-      50% { opacity: 0.8; }
-      100% { transform: scale(2.0); opacity: 0; }
+      0% {
+        transform: scale(0.4);
+        opacity: 0;
+      }
+
+      50% {
+        opacity: 0.8;
+      }
+
+      100% {
+        transform: scale(2.0);
+        opacity: 0;
+      }
     }
 
     /* Night Shift Dimming */
@@ -408,21 +421,22 @@
       display: flex;
       align-items: center;
       padding: 10px 12px;
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
       color: var(--text);
-      opacity: 0.7;
+      opacity: 0.85;
       cursor: pointer;
       user-select: none;
       transition: all 0.2s;
-      background: rgba(0, 0, 0, 0.02);
+      background: transparent;
+      /* border-top: 0.5px solid var(--border); */
       border-bottom: 1px solid var(--border);
     }
 
     [data-theme="dark"] .group-header {
-      background: rgba(255, 255, 255, 0.03);
+      background: transparent;
     }
 
     .group-header:hover {
@@ -2156,7 +2170,7 @@
         // Look for our specific backup Gist, excluding the one marked for deletion
         const found = gists.find(g =>
           (g.description === 'Daystack Data Backup' ||
-          (g.files && g.files['daystack-data.json'])) &&
+            (g.files && g.files['daystack-data.json'])) &&
           g.id !== excludeId
         );
         return found ? found.id : null;
@@ -2350,17 +2364,17 @@
         state.tasks = imported.tasks || [];
         state.projects = imported.projects || [];
         state.generalCollapsed = imported.generalCollapsed || {};
-        
+
         // Capture local-only credentials BEFORE merging settings
         const currentToken = state.settings.cloudToken;
         const currentGistId = state.settings.cloudGistId;
-        
+
         state.settings = { ...state.settings, ...(imported.settings || {}) };
-        
+
         // Unconditionally restore the local credentials
         state.settings.cloudToken = currentToken;
         state.settings.cloudGistId = currentGistId;
-        
+
         state.settings.cloudLastSync = gist.updated_at; // Crucial for heartbeat check
         window._remoteLastUpdated = gist.updated_at; // Update global state too
         state.lastActiveDate = imported.lastActiveDate || today();
@@ -3908,9 +3922,9 @@
         // Capture local-only credentials BEFORE merging settings
         const currentToken = state.settings.cloudToken;
         const currentGistId = state.settings.cloudGistId;
-        
+
         state.settings = { ...state.settings, ...(imported.settings || {}) };
-        
+
         // Unconditionally restore the local credentials
         state.settings.cloudToken = currentToken;
         state.settings.cloudGistId = currentGistId;
