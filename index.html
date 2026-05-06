@@ -969,11 +969,15 @@
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 6px;
       font-size: 11px;
       cursor: pointer;
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
     }
 
     .search-input:focus {
@@ -1591,7 +1595,11 @@
     }
 
     .cloud-icon {
-      font-size: 14px;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      line-height: 1;
     }
 
     .cloud-icon.syncing {
