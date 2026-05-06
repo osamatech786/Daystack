@@ -40,7 +40,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
 - ☁️ **Smart Cloud Sync**: Dedicated `☁↑` (Push) and `☁↓` (Fetch) buttons in the header for total control. Performs an intelligent conflict check before every sync to prevent data loss.
 - 🚀 **Blazing Fast**: Single-page architecture with zero external dependencies.
-- 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars to maximize vertical space.
+- 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars. Features an adaptive mobile layout that intelligently prioritizes space for controls on small screens.
 - ↕️ **Master Toggle**: Expand or collapse all groups in a tab with a single click.
 - 🧘 **Group Hierarchy**: Distinct, tinted group headers with clear visual separation for better structure.
 - 💓 **The Heartbeat**: A silent 1-minute engine that powers all real-time logic (Reset, Auto-Save, Zen Breath, and Focus Pings).

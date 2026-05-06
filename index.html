@@ -1086,8 +1086,25 @@
 
       .file-btns {
         width: 100%;
-        justify-content: flex-end;
+        justify-content: space-between;
+        gap: 4px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2px;
       }
+
+      .file-btns::-webkit-scrollbar {
+        display: none;
+      }
+
+      .cloud-status {
+        padding: 4px 6px;
+        margin-left: 0;
+        flex-shrink: 0; /* Don't shrink the cloud icon/text unless we hide text */
+      }
+
+
 
       .tab-bar {
         justify-content: flex-start;
@@ -1104,9 +1121,7 @@
         flex-shrink: 0;
       }
 
-      .file-btns {
-        justify-content: flex-end;
-      }
+
 
       .undo-btn {
         opacity: 1;
@@ -1130,6 +1145,25 @@
         font-size: 10px;
         padding: 4px 8px;
         margin-left: 4px;
+      }
+
+      .file-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+
+
+
+      @media (max-width: 400px) {
+        #cloud-text {
+          display: none;
+        }
+        .file-btns {
+          gap: 2px;
+        }
+        .file-btn {
+          padding: 4px 6px;
+        }
       }
 
       .task {
