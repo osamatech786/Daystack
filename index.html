@@ -3083,9 +3083,16 @@
       if (action === 'task-click') {
         const tid = actionEl.dataset.tid;
         const view = actionEl.dataset.view;
-        if (view === 'today') toggleInProgress(tid);
-        if (view === 'progress') markDone(tid);
-        // recurring tab: task-click does nothing (read-only master list)
+
+        // Prevent moving the task if it's a double-click (Edit)
+        if (e.detail === 1) {
+          window._taskClickTimer = setTimeout(() => {
+            if (view === 'today') toggleInProgress(tid);
+            if (view === 'progress') markDone(tid);
+          }, 250);
+        } else if (e.detail === 2) {
+          clearTimeout(window._taskClickTimer);
+        }
       }
 
       else if (action === 'toggle-sub') {
@@ -3437,6 +3444,7 @@
     });
 
     function triggerRename(target) {
+      clearTimeout(window._taskClickTimer);
       if (target.classList.contains('task-title')) {
         const span = target;
         const tid = span.dataset.tid;
