@@ -974,10 +974,12 @@
       font-size: 11px;
       cursor: pointer;
       transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-direction: row !important;
       gap: 2px;
+      white-space: nowrap !important;
     }
 
     .search-input:focus {
@@ -1586,6 +1588,11 @@
       opacity: 1;
     }
 
+    .cloud-status {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
     [data-theme="dark"] .cloud-status:hover {
       background: rgba(255, 255, 255, 0.05);
     }
@@ -1596,15 +1603,16 @@
 
     .cloud-icon {
       font-size: 15px;
-      display: inline-flex;
-      align-items: center;
+      display: inline-flex !important;
+      align-items: center !important;
+      flex-direction: row !important;
       gap: 2px;
       line-height: 1;
+      white-space: nowrap;
     }
 
     .cloud-icon.syncing {
       animation: spin 2s linear infinite;
-      display: inline-block;
     }
 
     .cloud-error {
@@ -1876,6 +1884,12 @@
               <span class="slider"></span>
             </label>
           </div>
+          <div class="settings-row" id="secure-context-warning" style="display: none; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 8px; border-left: 3px solid var(--pri-red); margin-top: 8px;">
+            <div class="settings-desc" style="color: var(--pri-red); opacity: 1;">
+              ⚠️ Notifications require <b>HTTPS</b> or <b>localhost</b>. They are currently blocked because you are using an insecure connection (likely a local file).
+            </div>
+          </div>
+          <button class="settings-btn" onclick="triggerFocusPing(true)" style="margin-top: 8px; width: 100%;">Test Notification</button>
         </div>
 
         <div class="settings-section">
@@ -1997,27 +2011,39 @@
     const STORAGE_KEY = 'taskTracker_v1';
 
     // Service Worker Registration for Mobile Notifications (Inlined to keep app as a Single File)
+    window._swRegistered = false;
     if ('serviceWorker' in navigator) {
       const swCode = `
+        self.addEventListener('install', (event) => {
+          self.skipWaiting();
+        });
+
+        self.addEventListener('activate', (event) => {
+          event.waitUntil(clients.claim());
+        });
+
         self.addEventListener('notificationclick', function(event) {
           event.notification.close();
           event.waitUntil(
-            clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-              if (clientList.length > 0) {
-                let client = clientList[0];
-                for (let i = 0; i < clientList.length; i++) {
-                  if (clientList[i].focused) { client = clientList[i]; }
+            clients.matchAll({ type: 'window' }).then(windowClients => {
+              for (var i = 0; i < windowClients.length; i++) {
+                var client = windowClients[i];
+                if (client.url === '/' && 'focus' in client) {
+                  return client.focus();
                 }
-                return client.focus();
               }
-              return clients.openWindow('/');
+              if (clients.openWindow) {
+                return clients.openWindow('/');
+              }
             })
           );
         });
       `;
       const blob = new Blob([swCode], { type: 'application/javascript' });
       const swUrl = URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl).catch(err => console.warn('SW registration failed:', err));
+      navigator.serviceWorker.register(swUrl)
+        .then(() => { window._swRegistered = true; })
+        .catch(err => console.warn('SW registration failed:', err));
     }
 
     const getCycleDate = (resetTime = '00:00', date = new Date()) => {
@@ -3280,6 +3306,9 @@
         document.getElementById('set-notifications').checked = state.settings.notifications;
         document.getElementById('set-reset-time').value = state.settings.resetTime;
 
+        // Secure Context Check
+        document.getElementById('secure-context-warning').style.display = window.isSecureContext ? 'none' : 'block';
+
         // Cloud Sync fields
         document.getElementById('set-cloud-sync').checked = state.settings.cloudSync;
         document.getElementById('set-cloud-token').value = state.settings.cloudToken;
@@ -3309,7 +3338,10 @@
         const newFocusFreq = parseInt(document.getElementById('set-focus-freq').value) || 25;
         if (state.settings.focusFreq !== newFocusFreq) { state.settings.focusFreq = newFocusFreq; changed = true; }
 
+        // Notification save
+        const wasNotificationsEnabled = state.settings.notifications;
         setBool('notifications', document.getElementById('set-notifications').checked);
+
         setVal('resetTime', document.getElementById('set-reset-time').value || '00:00');
 
         // Cloud Sync save
@@ -3333,7 +3365,6 @@
         }
 
         overlay.classList.remove('show');
-        if (state.settings.notifications) requestNotificationPermission();
 
         if (changed) {
           save(state);
@@ -3341,6 +3372,10 @@
           // If sync was just enabled OR changed to instant, trigger a sync
           if (state.settings.cloudSync && (!wasSyncEnabled || state.settings.cloudSyncFreq === 0)) {
             handleCloudSync();
+          }
+          // Only ask for permission if it was just turned on and we haven't asked yet
+          if (state.settings.notifications && !wasNotificationsEnabled) {
+            requestNotificationPermission();
           }
           renderAll();
         }
@@ -3393,7 +3428,9 @@
       }
     });
 
-    function triggerFocusPing() {
+    function triggerFocusPing(isTest = false) {
+      console.log('Focus Ping Triggered. Notification Permission:', Notification.permission, 'Secure Context:', window.isSecureContext);
+      
       // Find tasks in In Progress view and add animation
       const inProgressTasks = document.querySelectorAll('#col-progress .task');
       inProgressTasks.forEach(t => {
@@ -3402,38 +3439,69 @@
         t.classList.add('focus-ping');
       });
 
-      if (state.settings.notifications && Notification.permission === 'granted') {
-        const title = 'Daystack Focus Nudge';
-        const options = {
-          body: "Time to check in on your active tasks!",
-          icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧘</text></svg>',
-          tag: 'focus-nudge',
-          renotify: true
-        };
+      if (!('Notification' in window)) {
+        if (isTest) alert('Your browser does not support desktop notifications.');
+        return;
+      }
 
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.ready.then(registration => {
-            registration.showNotification(title, options);
-          }).catch(err => {
-            console.warn('Notification failed via SW, falling back:', err);
-            new Notification(title, options);
-          });
-        } else {
-          new Notification(title, options);
+      const showNotif = () => {
+        if ((state.settings.notifications || isTest) && Notification.permission === 'granted') {
+          const title = 'Daystack Focus Nudge';
+          const options = {
+            body: "Time to check in on your active tasks!",
+            tag: 'focus-nudge',
+            renotify: true
+          };
+
+          const fallbackNotif = () => {
+            try { 
+              new Notification(title, options); 
+              if (isTest) console.log('Notification sent via Standard API');
+            } catch (e) { 
+              console.error('All notification methods failed:', e); 
+              if (isTest) alert('Failed to show notification. Note: Mobile Chrome requires HTTPS or localhost for notifications.');
+            }
+          };
+
+          if ('serviceWorker' in navigator && window._swRegistered) {
+            navigator.serviceWorker.ready
+              .then(reg => {
+                reg.showNotification(title, options);
+                if (isTest) console.log('Notification sent via Service Worker');
+              })
+              .catch(() => fallbackNotif());
+          } else {
+            fallbackNotif();
+          }
+        } else if (isTest && Notification.permission === 'denied') {
+          alert('Notification permission is DENIED. Please check your browser address bar settings to allow notifications.');
         }
+      };
+
+      if (Notification.permission === 'default' && isTest) {
+        requestNotificationPermission(showNotif);
+      } else {
+        showNotif();
       }
     }
 
-    function requestNotificationPermission() {
+    function requestNotificationPermission(callback) {
       if (Notification.permission === 'default') {
         Notification.requestPermission().then(permission => {
-          if (permission === 'granted' && 'serviceWorker' in navigator) {
+          if (permission === 'granted' && 'serviceWorker' in navigator && window._swRegistered) {
             // Wake up SW
             navigator.serviceWorker.ready.then(reg => {
               console.log('Notifications enabled and SW ready');
-            });
+              if (callback) callback();
+            }).catch(() => { if (callback) callback(); });
+          } else if (permission === 'granted') {
+            if (callback) callback();
+          } else {
+            if (callback) callback();
           }
-        });
+        }).catch(() => { if (callback) callback(); });
+      } else {
+        if (callback) callback();
       }
     }
 
