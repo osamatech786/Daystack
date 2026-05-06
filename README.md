@@ -46,8 +46,8 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 💓 **The Heartbeat**: A silent 1-minute engine that powers all real-time logic (Reset, Auto-Save, Zen Breath, and Focus Pings).
 - ✨ **Interactive Onboarding**: New users are guided by a premium, glassmorphic tour that highlights core features and helps create the first task.
 - 📱 **Touch Gestures**: Full mobile support for renaming via **Double-Tap** or **Long-Press** on any task or group.
-- 🔔 **Cross-Platform Notifications**: Browser notifications work seamlessly on both Desktop and Phone. 
-  *(Note: Mobile notifications require **HTTPS** or **localhost**. Desktop has a robust fallback for local files).*
+- 🔔 **Cross-Platform Notifications**: Browser notifications work seamlessly on both Desktop and Phone using a robust, inlined Service Worker.
+  *(Note: Mobile notifications require **HTTPS** or **localhost**. GitHub Pages deployment is fully supported via scoped registrations).*
 
 ## Tabs
 
@@ -201,7 +201,7 @@ Accessed via the ⚙️ icon. Controls:
 - Double-tap or Long-press to rename tasks and groups.
 - Haptic feedback on touch interaction.
 - Responsive layout optimized for one-handed use.
-- Full support for browser notifications on Chrome for Android via inlined Service Worker.
+- Full support for browser notifications on Chrome for Android via an advanced inlined Service Worker that handles GitHub Pages subfolders and scoped registrations.
 
 ---
 

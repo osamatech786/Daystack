@@ -2047,6 +2047,7 @@
     // Service Worker Registration for Mobile Notifications (Inlined to keep app as a Single File)
     window._swRegistered = false;
     if ('serviceWorker' in navigator) {
+      const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
       const swCode = `
         self.addEventListener('install', (event) => {
           self.skipWaiting();
@@ -2059,15 +2060,15 @@
         self.addEventListener('notificationclick', function(event) {
           event.notification.close();
           event.waitUntil(
-            clients.matchAll({ type: 'window' }).then(windowClients => {
+            clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
               for (var i = 0; i < windowClients.length; i++) {
                 var client = windowClients[i];
-                if (client.url === '/' && 'focus' in client) {
+                if ('focus' in client) {
                   return client.focus();
                 }
               }
               if (clients.openWindow) {
-                return clients.openWindow('/');
+                return clients.openWindow('${currentPath}');
               }
             })
           );
@@ -2075,9 +2076,18 @@
       `;
       const blob = new Blob([swCode], { type: 'application/javascript' });
       const swUrl = URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl)
-        .then(() => { window._swRegistered = true; })
-        .catch(err => console.warn('SW registration failed:', err));
+      
+      navigator.serviceWorker.register(swUrl, { scope: currentPath })
+        .then((reg) => { 
+          window._swRegistered = true; 
+          console.log('SW Registered with scope:', currentPath);
+        })
+        .catch(err => {
+          console.warn('SW registration failed with scope, trying default:', err);
+          navigator.serviceWorker.register(swUrl)
+            .then(() => { window._swRegistered = true; })
+            .catch(e => console.error('All SW registration attempts failed:', e));
+        });
     }
 
     const getCycleDate = (resetTime = '00:00', date = new Date()) => {
@@ -3462,50 +3472,61 @@
       }
     });
 
-    function triggerFocusPing(isTest = false) {
-      console.log('Focus Ping Triggered. Notification Permission:', Notification.permission, 'Secure Context:', window.isSecureContext);
+    async function triggerFocusPing(isTest = false) {
+      console.log('Focus Ping Triggered. Permission:', Notification.permission, 'Secure Context:', window.isSecureContext);
       
-      // Find tasks in In Progress view and add animation
       const inProgressTasks = document.querySelectorAll('#col-progress .task');
       inProgressTasks.forEach(t => {
         t.classList.remove('focus-ping');
-        void t.offsetWidth; // trigger reflow
+        void t.offsetWidth; 
         t.classList.add('focus-ping');
       });
 
       if (!('Notification' in window)) {
-        if (isTest) alert('Your browser does not support desktop notifications.');
+        if (isTest) alert('Your browser does not support notifications.');
         return;
       }
 
-      const showNotif = () => {
+      const showNotif = async () => {
         if ((state.settings.notifications || isTest) && Notification.permission === 'granted') {
           const title = 'Daystack Focus Nudge';
           const options = {
             body: "Time to check in on your active tasks!",
             tag: 'focus-nudge',
-            renotify: true
+            renotify: true,
+            icon: 'https://osamatech786.github.io/Daystack/favicon.ico' // Try to provide an icon if possible
           };
 
-          const fallbackNotif = () => {
+          const fallbackNotif = (err) => {
             try { 
               new Notification(title, options); 
               if (isTest) console.log('Notification sent via Standard API');
             } catch (e) { 
               console.error('All notification methods failed:', e); 
-              if (isTest) alert('Failed to show notification. Note: Mobile Chrome requires HTTPS or localhost for notifications.');
+              if (isTest) {
+                let msg = 'Failed to show notification. ';
+                if (!window.isSecureContext) msg += 'Note: Mobile Chrome requires HTTPS.';
+                else if (err) msg += 'Service Worker Error: ' + err.message;
+                else msg += 'Your browser may require a Service Worker or manual permission reset.';
+                alert(msg);
+              }
             }
           };
 
-          if ('serviceWorker' in navigator && window._swRegistered) {
-            navigator.serviceWorker.ready
-              .then(reg => {
-                reg.showNotification(title, options);
+          try {
+            if ('serviceWorker' in navigator) {
+              const reg = await navigator.serviceWorker.getRegistration();
+              if (reg) {
+                await reg.showNotification(title, options);
                 if (isTest) console.log('Notification sent via Service Worker');
-              })
-              .catch(() => fallbackNotif());
-          } else {
-            fallbackNotif();
+              } else {
+                fallbackNotif(new Error('No Service Worker registration found.'));
+              }
+            } else {
+              fallbackNotif(new Error('Service Workers not supported.'));
+            }
+          } catch (e) {
+            fallbackNotif(e);
           }
         } else if (isTest && Notification.permission === 'denied') {
           alert('Notification permission is DENIED. Please check your browser address bar settings to allow notifications.');

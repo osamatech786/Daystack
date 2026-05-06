@@ -97,3 +97,12 @@ The app compares `lastActiveDate` vs today's date (`YYYY-MM-DD`) based on the `r
 - Undo restores to In Progress (not For Today).
 - Duplicate title+source combinations are blocked.
 - `_undone` field is legacy/deprecated.
+
+## Notifications & Service Worker
+To maintain the "Single File" architecture while supporting mobile Chrome (which requires a Service Worker for notifications), Daystack uses an **Inlined Service Worker**:
+
+1. **Blob Registration**: The SW code is stored as a string, converted to a `Blob`, and registered via a `blob:` URL.
+2. **Scoped Control**: On GitHub Pages, the SW is registered with an explicit scope (e.g., `/Daystack/`) to ensure it correctly manages the subfolder.
+3. **Activation**: Uses `self.skipWaiting()` and `clients.claim()` to take control of the page immediately.
+4. **Interaction**: The `notificationclick` handler intelligently searches for existing window clients to focus or opens a new one using the baked-in application path.
+5. **Robustness**: The app uses `navigator.serviceWorker.getRegistration()` for discovery, providing a reliable fallback to standard desktop notifications if the SW fails to register.
