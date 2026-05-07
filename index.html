@@ -2046,6 +2046,7 @@
 
     // Service Worker Registration for Mobile Notifications (Inlined to keep app as a Single File)
     window._swRegistered = false;
+    window._swRegistration = null;
     if ('serviceWorker' in navigator) {
       const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
       const swCode = `
@@ -2077,17 +2078,26 @@
       const blob = new Blob([swCode], { type: 'application/javascript' });
       const swUrl = URL.createObjectURL(blob);
       
-      navigator.serviceWorker.register(swUrl, { scope: currentPath })
-        .then((reg) => { 
-          window._swRegistered = true; 
+      const registerSW = async () => {
+        try {
+          // Try specific scope first
+          let reg = await navigator.serviceWorker.register(swUrl, { scope: currentPath });
+          window._swRegistered = true;
+          window._swRegistration = reg;
           console.log('SW Registered with scope:', currentPath);
-        })
-        .catch(err => {
+        } catch (err) {
           console.warn('SW registration failed with scope, trying default:', err);
-          navigator.serviceWorker.register(swUrl)
-            .then(() => { window._swRegistered = true; })
-            .catch(e => console.error('All SW registration attempts failed:', e));
-        });
+          try {
+            let reg = await navigator.serviceWorker.register(swUrl);
+            window._swRegistered = true;
+            window._swRegistration = reg;
+          } catch (e2) {
+            console.error('All SW registration attempts failed:', e2);
+            window._swError = e2.message;
+          }
+        }
+      };
+      registerSW();
     }
 
     const getCycleDate = (resetTime = '00:00', date = new Date()) => {
@@ -3515,12 +3525,27 @@
 
           try {
             if ('serviceWorker' in navigator) {
-              const reg = await navigator.serviceWorker.getRegistration();
+              // Try to get registration in 3 ways for maximum mobile compatibility
+              let reg = await navigator.serviceWorker.getRegistration();
+              if (!reg && window._swRegistration) reg = window._swRegistration;
+              if (!reg) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                reg = regs.find(r => r.active || r.waiting || r.installing);
+              }
+
               if (reg) {
-                await reg.showNotification(title, options);
-                if (isTest) console.log('Notification sent via Service Worker');
+                // Ensure we use the most ready worker
+                const worker = reg.active || reg.waiting || reg.installing;
+                if (worker) {
+                  await reg.showNotification(title, options);
+                  if (isTest) console.log('Notification sent via Service Worker');
+                } else {
+                  fallbackNotif(new Error('Service Worker registration found but no active worker.'));
+                }
               } else {
-                fallbackNotif(new Error('No Service Worker registration found.'));
+                let errorMsg = 'No Service Worker registration found.';
+                if (window._swError) errorMsg += ' (Reg Error: ' + window._swError + ')';
+                fallbackNotif(new Error(errorMsg));
               }
             } else {
               fallbackNotif(new Error('Service Workers not supported.'));
