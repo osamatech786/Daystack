@@ -286,8 +286,16 @@
     }
 
     @media (max-width: 440px) {
-      .tab { font-size: 11px; padding: 6px 2px; gap: 2px; }
-      .badge { font-size: 9px; padding: 0 4px; }
+      .tab {
+        font-size: 11px;
+        padding: 6px 2px;
+        gap: 2px;
+      }
+
+      .badge {
+        font-size: 9px;
+        padding: 0 4px;
+      }
     }
 
     .file-btns {
@@ -1087,7 +1095,8 @@
       .cloud-status {
         padding: 4px 6px;
         margin-left: 0;
-        flex-shrink: 0; /* Don't shrink the cloud icon/text unless we hide text */
+        flex-shrink: 0;
+        /* Don't shrink the cloud icon/text unless we hide text */
       }
 
 
@@ -1144,9 +1153,11 @@
         #cloud-text {
           display: none;
         }
+
         .file-btns {
           gap: 2px;
         }
+
         .file-btn {
           padding: 4px 6px;
         }
@@ -1720,7 +1731,8 @@
             <span class="cloud-icon" id="cloud-icon">☁↑</span>
             <span id="cloud-text">Local Only</span>
           </div>
-          <button class="file-btn" id="btn-header-fetch" title="Fetch / Restore from Cloud" style="display: none;">☁↓</button>
+          <button class="file-btn" id="btn-header-fetch" title="Fetch / Restore from Cloud"
+            style="display: none;">☁↓</button>
           <div class="btn-wrap">
             <button class="file-btn" id="btn-export">Save</button>
             <div class="dirty-dot" id="save-dirty"></div>
@@ -1904,12 +1916,15 @@
               <span class="slider"></span>
             </label>
           </div>
-          <div class="settings-row" id="secure-context-warning" style="display: none; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 8px; border-left: 3px solid var(--pri-red); margin-top: 8px;">
+          <div class="settings-row" id="secure-context-warning"
+            style="display: none; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 8px; border-left: 3px solid var(--pri-red); margin-top: 8px;">
             <div class="settings-desc" style="color: var(--pri-red); opacity: 1;">
-              ⚠️ Notifications require <b>HTTPS</b> or <b>localhost</b>. They are currently blocked because you are using an insecure connection (likely a local file).
+              ⚠️ Notifications require <b>HTTPS</b> or <b>localhost</b>. They are currently blocked because you are
+              using an insecure connection (likely a local file).
             </div>
           </div>
-          <button class="settings-btn" onclick="triggerFocusPing(true)" style="margin-top: 8px; width: 100%;">Test Notification</button>
+          <button class="settings-btn" onclick="triggerFocusPing(true)" style="margin-top: 8px; width: 100%;">Test
+            Notification</button>
         </div>
 
         <div class="settings-section">
@@ -2030,20 +2045,29 @@
   <script>
     const STORAGE_KEY = 'taskTracker_v1';
 
-    // Service Worker Registration for Mobile Notifications
-    // Note: To maintain "Single-File" architecture, we avoid a separate sw.js.
-    // Modern mobile browsers (Chrome/Android) require a physical file for background notifications.
-    // We prioritize the Standard Notification API and Haptic Feedback for the single-file experience.
+    // Service Worker Registration for Mobile Background Notifications
+    // Mobile Chrome requires a separate physical file (sw.js) for push/background notifications.
+    // TO ENABLE MOBILE NOTIFICATIONS: 
+    // 1. Ensure the "sw.js" file from this repository is in your root directory.
+    // 2. Uncomment the 'registerSW();' call at the bottom of this block.
     window._swRegistered = false;
     window._swRegistration = null;
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration().then(reg => {
-        if (reg) {
+      const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+      const swUrl = currentPath + 'sw.js';
+      
+      const registerSW = async () => {
+        try {
+          let reg = await navigator.serviceWorker.register(swUrl, { scope: currentPath });
           window._swRegistered = true;
           window._swRegistration = reg;
-          console.log('Existing SW found:', reg.scope);
+          console.log('SW Registered with scope:', currentPath);
+        } catch (err) {
+          console.error('SW registration failed:', err);
+          window._swError = err.message;
         }
-      });
+      };
+      // registerSW(); // Disabled by default to maintain "Single-File" core value.
     }
 
     const getCycleDate = (resetTime = '00:00', date = new Date()) => {
@@ -3430,11 +3454,11 @@
 
     async function triggerFocusPing(isTest = false) {
       console.log('Focus Ping Triggered. Permission:', Notification.permission, 'Secure Context:', window.isSecureContext);
-      
+
       const inProgressTasks = document.querySelectorAll('#col-progress .task');
       inProgressTasks.forEach(t => {
         t.classList.remove('focus-ping');
-        void t.offsetWidth; 
+        void t.offsetWidth;
         t.classList.add('focus-ping');
       });
 
@@ -3457,11 +3481,11 @@
           };
 
           const fallbackNotif = (err) => {
-            try { 
-              new Notification(title, options); 
+            try {
+              new Notification(title, options);
               if (isTest) console.log('Notification sent via Standard API');
-            } catch (e) { 
-              console.error('All notification methods failed:', e); 
+            } catch (e) {
+              console.error('All notification methods failed:', e);
               if (isTest) {
                 let msg = 'Failed to show notification. ';
                 if (!window.isSecureContext) msg += 'Note: Mobile Chrome requires HTTPS.';
@@ -3492,9 +3516,10 @@
           } catch (e) {
             console.error('Notification failed:', e);
             if (isTest) {
-              let msg = 'Failed to show notification. ';
-              if (!window.isSecureContext) msg += 'Note: Mobile Chrome requires HTTPS.';
-              else msg += 'To support background notifications on mobile while maintaining a single-file app, please ensure the app is open in your browser.';
+              let msg = 'Failed to show native notification.\n\n';
+              msg += 'DEV CONTEXT: In phone browsers, standard based notifications are not supported directly. ';
+              msg += 'In order to make them work, you must add a "sw.js" file to your root directory.\n\n';
+              msg += 'HOW TO RESOLVE: To support background notifications on mobile, ensure the "sw.js" file is present and the registration code in the <script> section of this file is uncommented. The app automatically falls back to the standard API on desktop.';
               alert(msg);
             }
           }

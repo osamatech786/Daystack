@@ -46,8 +46,8 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 💓 **The Heartbeat**: A silent 1-minute engine that powers all real-time logic (Reset, Auto-Save, Zen Breath, and Focus Pings).
 - ✨ **Interactive Onboarding**: New users are guided by a premium, glassmorphic tour that highlights core features and helps create the first task.
 - 📱 **Touch Gestures**: Full mobile support for renaming via **Double-Tap** or **Long-Press** on any task or group.
-- 🔔 **Single-File Notifications**: Seamless browser notifications on Desktop and Phone using the Standard Notification API, optimized for zero-dependency portability.
-  *(Note: Mobile notifications require **HTTPS** and work best while the app tab is active. Background nudges on mobile are reinforced with **Haptic Vibration** feedback).*
+- 🔔 **Single-File Notifications**: Seamless browser notifications on Desktop and Phone using the Standard Notification API.
+  *(Note: Mobile notifications require **HTTPS**. To support background notifications on Chrome for Android, you must use the optional **sw.js** file provided in this repository and enable the registration code in the script section).*
 
 ## Tabs
 

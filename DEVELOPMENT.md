@@ -99,10 +99,10 @@ The app compares `lastActiveDate` vs today's date (`YYYY-MM-DD`) based on the `r
 - `_undone` field is legacy/deprecated.
 
 ## Notifications & Service Worker
-To maintain the "Single File" architecture while supporting mobile Chrome (which requires a Service Worker for notifications), Daystack uses an **Inlined Service Worker**:
 
-1. **Blob Registration**: The SW code is stored as a string, converted to a `Blob`, and registered via a `blob:` URL.
-2. **Scoped Control**: On GitHub Pages, the SW is registered with an explicit scope (e.g., `/Daystack/`) to ensure it correctly manages the subfolder.
-3. **Activation**: Uses `self.skipWaiting()` and `clients.claim()` to take control of the page immediately.
-4. **Interaction**: The `notificationclick` handler intelligently searches for existing window clients to focus or opens a new one using the baked-in application path.
-5. **Robustness**: The app uses `navigator.serviceWorker.getRegistration()` for discovery, providing a reliable fallback to standard desktop notifications if the SW fails to register.
+Daystack prioritizes a "Single HTML File" architecture. However, modern mobile browsers (specifically Chrome on Android) require a separate physical Service Worker file to support background notifications.
+
+1. **Portable Mode (Default)**: The app runs perfectly as a single file. Notifications use the standard `Notification` API, which works on mobile while the app tab is active.
+2. **Full Mobile Support**: To enable background notifications on Android, the `sw.js` file from the repository must be placed in the root directory, and the `registerSW()` call in the `index.html` script section must be uncommented.
+3. **Developer Fallback**: If `new Notification()` fails (illegal constructor error on mobile), the app provides a detailed console error and alert explaining the requirement for `sw.js`.
+4. **Haptic Feedback**: The app triggers `navigator.vibrate` during focus pings as a high-fidelity alternative for mobile users when system notifications are restricted.
