@@ -2044,60 +2044,20 @@
   <script>
     const STORAGE_KEY = 'taskTracker_v1';
 
-    // Service Worker Registration for Mobile Notifications (Inlined to keep app as a Single File)
+    // Service Worker Registration for Mobile Notifications
+    // Note: To maintain "Single-File" architecture, we avoid a separate sw.js.
+    // Modern mobile browsers (Chrome/Android) require a physical file for background notifications.
+    // We prioritize the Standard Notification API and Haptic Feedback for the single-file experience.
     window._swRegistered = false;
     window._swRegistration = null;
     if ('serviceWorker' in navigator) {
-      const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-      const swCode = `
-        self.addEventListener('install', (event) => {
-          self.skipWaiting();
-        });
-
-        self.addEventListener('activate', (event) => {
-          event.waitUntil(clients.claim());
-        });
-
-        self.addEventListener('notificationclick', function(event) {
-          event.notification.close();
-          event.waitUntil(
-            clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
-              for (var i = 0; i < windowClients.length; i++) {
-                var client = windowClients[i];
-                if ('focus' in client) {
-                  return client.focus();
-                }
-              }
-              if (clients.openWindow) {
-                return clients.openWindow('${currentPath}');
-              }
-            })
-          );
-        });
-      `;
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(blob);
-      
-      const registerSW = async () => {
-        try {
-          // Try specific scope first
-          let reg = await navigator.serviceWorker.register(swUrl, { scope: currentPath });
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (reg) {
           window._swRegistered = true;
           window._swRegistration = reg;
-          console.log('SW Registered with scope:', currentPath);
-        } catch (err) {
-          console.warn('SW registration failed with scope, trying default:', err);
-          try {
-            let reg = await navigator.serviceWorker.register(swUrl);
-            window._swRegistered = true;
-            window._swRegistration = reg;
-          } catch (e2) {
-            console.error('All SW registration attempts failed:', e2);
-            window._swError = e2.message;
-          }
+          console.log('Existing SW found:', reg.scope);
         }
-      };
-      registerSW();
+      });
     }
 
     const getCycleDate = (resetTime = '00:00', date = new Date()) => {
@@ -3492,6 +3452,9 @@
         t.classList.add('focus-ping');
       });
 
+      // Haptic feedback for mobile
+      if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+
       if (!('Notification' in window)) {
         if (isTest) alert('Your browser does not support notifications.');
         return;
@@ -3524,34 +3487,30 @@
           };
 
           try {
-            if ('serviceWorker' in navigator) {
-              // Try to get registration in 3 ways for maximum mobile compatibility
-              let reg = await navigator.serviceWorker.getRegistration();
-              if (!reg && window._swRegistration) reg = window._swRegistration;
-              if (!reg) {
-                const regs = await navigator.serviceWorker.getRegistrations();
-                reg = regs.find(r => r.active || r.waiting || r.installing);
-              }
+            // Priority 1: Standard API (Works on Mobile while app is open)
+            if (!window._swRegistration) {
+              new Notification(title, options);
+              if (isTest) console.log('Notification sent via Standard API');
+              return;
+            }
 
-              if (reg) {
-                // Ensure we use the most ready worker
-                const worker = reg.active || reg.waiting || reg.installing;
-                if (worker) {
-                  await reg.showNotification(title, options);
-                  if (isTest) console.log('Notification sent via Service Worker');
-                } else {
-                  fallbackNotif(new Error('Service Worker registration found but no active worker.'));
-                }
-              } else {
-                let errorMsg = 'No Service Worker registration found.';
-                if (window._swError) errorMsg += ' (Reg Error: ' + window._swError + ')';
-                fallbackNotif(new Error(errorMsg));
-              }
+            // Priority 2: Service Worker (If one happens to be registered)
+            const reg = window._swRegistration;
+            const worker = reg.active || reg.waiting || reg.installing;
+            if (worker) {
+              await reg.showNotification(title, options);
+              if (isTest) console.log('Notification sent via Service Worker');
             } else {
-              fallbackNotif(new Error('Service Workers not supported.'));
+              new Notification(title, options);
             }
           } catch (e) {
-            fallbackNotif(e);
+            console.error('Notification failed:', e);
+            if (isTest) {
+              let msg = 'Failed to show notification. ';
+              if (!window.isSecureContext) msg += 'Note: Mobile Chrome requires HTTPS.';
+              else msg += 'To support background notifications on mobile while maintaining a single-file app, please ensure the app is open in your browser.';
+              alert(msg);
+            }
           }
         } else if (isTest && Notification.permission === 'denied') {
           alert('Notification permission is DENIED. Please check your browser address bar settings to allow notifications.');

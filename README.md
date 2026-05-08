@@ -46,8 +46,8 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 💓 **The Heartbeat**: A silent 1-minute engine that powers all real-time logic (Reset, Auto-Save, Zen Breath, and Focus Pings).
 - ✨ **Interactive Onboarding**: New users are guided by a premium, glassmorphic tour that highlights core features and helps create the first task.
 - 📱 **Touch Gestures**: Full mobile support for renaming via **Double-Tap** or **Long-Press** on any task or group.
-- 🔔 **Cross-Platform Notifications**: Browser notifications work seamlessly on both Desktop and Phone using a robust, inlined Service Worker.
-  *(Note: Mobile notifications require **HTTPS** or **localhost**. GitHub Pages deployment is fully supported via scoped registrations).*
+- 🔔 **Single-File Notifications**: Seamless browser notifications on Desktop and Phone using the Standard Notification API, optimized for zero-dependency portability.
+  *(Note: Mobile notifications require **HTTPS** and work best while the app tab is active. Background nudges on mobile are reinforced with **Haptic Vibration** feedback).*
 
 ## Tabs
 
@@ -176,7 +176,7 @@ Accessed via the ⚙️ icon. Controls:
 - **Zen Breath**: Toggle rhythmic UI breathing.
 - **Night Shift**: Dims inactive tasks late at night (10 PM - 5 AM).
 - **Auto-Save**: Periodically syncs to your disk file (0 = Instant real-time saving).
-- **Focus Pings**: Periodic glow on active tasks and browser notifications (Service Worker enabled for Chrome on Android).
+- **Focus Pings**: Periodic glow on active tasks, browser notifications, and **Haptic Feedback** (Vibration) for mobile users.
 - **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM).
 - **Cloud Sync Frequency**: Control how often background syncs occur (0 = Instant).
 - **Reset Gist**: Manually clear Gist history and start a fresh cloud backup.
@@ -201,7 +201,7 @@ Accessed via the ⚙️ icon. Controls:
 - Double-tap or Long-press to rename tasks and groups.
 - Haptic feedback on touch interaction.
 - Responsive layout optimized for one-handed use.
-- Full support for browser notifications on Chrome for Android via an advanced inlined Service Worker that handles GitHub Pages subfolders and scoped registrations.
+- Responsive layout optimized for one-handed use with full support for browser notifications and haptic feedback.
 
 ---
 
