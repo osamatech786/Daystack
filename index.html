@@ -1916,6 +1916,26 @@
               <span class="slider"></span>
             </label>
           </div>
+          <div class="settings-row" id="notification-auto-row">
+            <div class="settings-info">
+              <div class="settings-label">Auto-Randomize Messages</div>
+              <div class="settings-desc">Send a fresh, randomized focus nudge message every time.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-notification-auto">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-row" id="notification-msg-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+            <div class="settings-info" style="width: 100%;">
+              <div class="settings-label">Notification Message</div>
+              <div class="settings-desc">Customize the message shown in focus nudge alerts.</div>
+            </div>
+            <div style="display: flex; gap: 8px; width: 100%; align-items: center;">
+              <input type="text" id="set-notification-msg" class="settings-input" style="flex: 1; width: auto;" placeholder="Time to check in on your active tasks!">
+              <button class="settings-btn" id="btn-clear-notification-msg" title="Reset to default message" style="flex: 0 0 auto; width: auto; padding: 6px 12px; height: 32px; border-radius: 8px; margin: 0; font-size: 11px;">Reset</button>
+            </div>
+          </div>
           <div class="settings-row" id="secure-context-warning"
             style="display: none; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 8px; border-left: 3px solid var(--pri-red); margin-top: 8px;">
             <div class="settings-desc" style="color: var(--pri-red); opacity: 1;">
@@ -2045,6 +2065,19 @@
   <script>
     const STORAGE_KEY = 'taskTracker_v1';
 
+    const RANDOM_NUDGES = [
+      "Are you distracted? 😉 Let's get back on track!",
+      "Focus mode activated! What are you working on right now?",
+      "A gentle nudge to stay on task. You got this!",
+      "Remember your goals for today! Let's make progress.",
+      "Breathe in, breathe out... now back to work!",
+      "Is your current task still your priority?",
+      "Keep going! Small steps lead to big achievements.",
+      "Distractions are temporary. Your success is permanent!",
+      "A wild focus nudge appeared! Focus +5!",
+      "Time to check in on your active tasks!"
+    ];
+
     // Service Worker Registration for Mobile Background Notifications
     // Mobile Chrome requires a separate physical file (sw.js) for push/background notifications.
     // TO ENABLE MOBILE NOTIFICATIONS: 
@@ -2131,8 +2164,9 @@
         savePulse: true,
         focusPings: false,
         focusFreq: 25,
-        focusFreq: 25,
         notifications: false,
+        notificationMsg: '',
+        notificationAuto: false,
         cloudSync: false,
         cloudToken: '',
         cloudGistId: '',
@@ -3328,6 +3362,28 @@
         document.getElementById('set-focus-pings').checked = state.settings.focusPings;
         document.getElementById('set-focus-freq').value = state.settings.focusFreq;
         document.getElementById('set-notifications').checked = state.settings.notifications;
+        
+        // Auto-Randomize & Custom Message state synchronization
+        const isAuto = !!state.settings.notificationAuto;
+        document.getElementById('set-notification-auto').checked = isAuto;
+        
+        const msgInput = document.getElementById('set-notification-msg');
+        const clearBtn = document.getElementById('btn-clear-notification-msg');
+        msgInput.value = state.settings.notificationMsg || '';
+        msgInput.disabled = isAuto;
+        clearBtn.disabled = isAuto;
+        if (isAuto) {
+          msgInput.style.opacity = '0.5';
+          msgInput.style.cursor = 'not-allowed';
+          clearBtn.style.opacity = '0.5';
+          clearBtn.style.cursor = 'not-allowed';
+        } else {
+          msgInput.style.opacity = '1';
+          msgInput.style.cursor = 'auto';
+          clearBtn.style.opacity = '1';
+          clearBtn.style.cursor = 'pointer';
+        }
+
         document.getElementById('set-reset-time').value = state.settings.resetTime;
 
         // Secure Context Check
@@ -3365,6 +3421,8 @@
         // Notification save
         const wasNotificationsEnabled = state.settings.notifications;
         setBool('notifications', document.getElementById('set-notifications').checked);
+        setBool('notificationAuto', document.getElementById('set-notification-auto').checked);
+        setVal('notificationMsg', document.getElementById('set-notification-msg').value.trim());
 
         setVal('resetTime', document.getElementById('set-reset-time').value || '00:00');
 
@@ -3472,9 +3530,27 @@
 
       const showNotif = async () => {
         if ((state.settings.notifications || isTest) && Notification.permission === 'granted') {
+          let isAuto = state.settings.notificationAuto;
+          let customMsg = state.settings.notificationMsg;
+
+          // If testing, pull the live unsaved inputs directly from the settings modal so the user gets real-time previews!
+          if (isTest) {
+            const autoCheckbox = document.getElementById('set-notification-auto');
+            const msgInput = document.getElementById('set-notification-msg');
+            if (autoCheckbox) isAuto = autoCheckbox.checked;
+            if (msgInput) customMsg = msgInput.value.trim();
+          }
+
+          let notifBody = "Time to check in on your active tasks!";
+          if (isAuto) {
+            notifBody = RANDOM_NUDGES[Math.floor(Math.random() * RANDOM_NUDGES.length)];
+          } else {
+            notifBody = customMsg || "Time to check in on your active tasks!";
+          }
+
           const title = 'Daystack Focus Nudge';
           const options = {
-            body: "Time to check in on your active tasks!",
+            body: notifBody,
             tag: 'focus-nudge',
             renotify: true,
             icon: 'https://osamatech786.github.io/Daystack/favicon.ico' // Try to provide an icon if possible
@@ -4138,6 +4214,30 @@
     });
 
     document.getElementById('btn-import').addEventListener('click', () => loadFromFile());
+
+    document.getElementById('btn-clear-notification-msg').addEventListener('click', () => {
+      document.getElementById('set-notification-msg').value = '';
+    });
+
+    document.getElementById('set-notification-auto').addEventListener('change', (e) => {
+      const isAuto = e.target.checked;
+      const msgInput = document.getElementById('set-notification-msg');
+      const clearBtn = document.getElementById('btn-clear-notification-msg');
+      
+      msgInput.disabled = isAuto;
+      clearBtn.disabled = isAuto;
+      if (isAuto) {
+        msgInput.style.opacity = '0.5';
+        msgInput.style.cursor = 'not-allowed';
+        clearBtn.style.opacity = '0.5';
+        clearBtn.style.cursor = 'not-allowed';
+      } else {
+        msgInput.style.opacity = '1';
+        msgInput.style.cursor = 'auto';
+        clearBtn.style.opacity = '1';
+        clearBtn.style.cursor = 'pointer';
+      }
+    });
 
     // Original hidden input fallback listener
     document.getElementById('file-import').addEventListener('change', e => {

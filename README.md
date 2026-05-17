@@ -47,7 +47,9 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - ✨ **Interactive Onboarding**: New users are guided by a premium, glassmorphic tour that highlights core features and helps create the first task.
 - 📱 **Touch Gestures**: Full mobile support for renaming via **Double-Tap** or **Long-Press** on any task or group.
 - 🔔 **Single-File Notifications**: Seamless browser notifications on Desktop and Phone using the Standard Notification API.
-  *(Note: Mobile notifications require **HTTPS**. To support background notifications on Chrome for Android, you must use the optional **sw.js** file provided in this repository and enable the registration code in the script section).*
+  - **Customizable Messages**: Craft your own personalized notification messages to stay uniquely motivated.
+  - **Randomized Focus Nudges**: Option to auto-randomize messages using a built-in pool of friendly, scientifically-backed focus prompts.
+  - *(Note: Mobile notifications require **HTTPS**. To support background notifications on Chrome for Android, you must use the optional **sw.js** file provided in this repository and enable the registration code in the script section).*
 
 ## Tabs
 
@@ -176,7 +178,8 @@ Accessed via the ⚙️ icon. Controls:
 - **Zen Breath**: Toggle rhythmic UI breathing.
 - **Night Shift**: Dims inactive tasks late at night (10 PM - 5 AM).
 - **Auto-Save**: Periodically syncs to your disk file (0 = Instant real-time saving).
-- **Focus Pings**: Periodic glow on active tasks, browser notifications, and **Haptic Feedback** (Vibration) for mobile users.
+- **Focus Pings**: Periodic glow on active tasks, customizable/randomized browser notifications, and **Haptic Feedback** (Vibration) for mobile users. Includes a **Test Notification** preview button.
+- **Notification Customization**: Define a tailored notification message or toggle **Auto-Randomize Messages** to send fresh, randomized focus prompts.
 - **Reset Time**: Customizable daily refresh time (e.g., 04:00 AM).
 - **Cloud Sync Frequency**: Control how often background syncs occur (0 = Instant).
 - **Reset Gist**: Manually clear Gist history and start a fresh cloud backup.
