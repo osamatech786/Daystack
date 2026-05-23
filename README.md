@@ -47,6 +47,8 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - ✨ **Interactive Onboarding**: New users are guided by a premium, glassmorphic tour that highlights core features and helps create the first task.
 - 📱 **Touch Gestures**: Full mobile support for renaming via **Double-Tap** or **Long-Press** on any task or group.
 - 🔔 **Single-File Notifications**: Seamless browser notifications on Desktop and Phone using the Standard Notification API.
+- 🗂️ **Collapsible Today Sections**: The "For Today" tab is split into two collapsible blocks — **Habits & Routines** (recurring tasks) and **Daily Targets** (one-off tasks) — so you can focus on one area at a time and reduce visual overwhelm.
+- 👁️ **Hide Checked Tasks**: A Settings toggle lets you instantly hide all struck-through tasks from the "For Today" view, keeping your list clean and clutter-free.
   - **Customizable Messages**: Craft your own personalized notification messages to stay uniquely motivated.
   - **Randomized Focus Nudges**: Option to auto-randomize messages using a built-in pool of friendly, scientifically-backed focus prompts.
   - *(Note: Mobile notifications require **HTTPS**. To support background notifications on Chrome for Android, you must use the optional **sw.js** file provided in this repository and enable the registration code in the script section).*
@@ -55,7 +57,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 
 | Tab | Purpose |
 |---|---|
-| For Today | Combined list of your Recurring pool + One-off tasks |
+| For Today | Two collapsible sections: **Habits & Routines** (recurring) and **Daily Targets** (one-off) |
 | In Progress | Tasks you're actively working on |
 | Done | Completed tasks |
 | Recurring | Master list of all daily tasks, add/edit/delete recurring tasks |
@@ -83,8 +85,12 @@ Task in In Progress = no strikethrough (already in progress, showing in its own 
 ## Column Definitions
 
 ### For Today
-- Shows: all tasks (both `source === 'daily'` and `source === 'oneoff'`) that are not `_done`.
-- `_struck === true` tasks remain VISIBLE with strikethrough (not hidden).
+- Split into two collapsible sections:
+  - **Habits & Routines**: tasks with `source === 'daily'`
+  - **Daily Targets**: tasks with `source === 'oneoff'`
+- Both sections can be collapsed/expanded independently with their toggle arrows.
+- `_struck === true` tasks remain VISIBLE with strikethrough by default.
+- Enable **Hide Checked** in Settings to hide all struck-through tasks instantly.
 - `_done === true` tasks are HIDDEN.
 
 ### In Progress
@@ -177,6 +183,7 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 Accessed via the ⚙️ icon. Controls:
 - **Zen Breath**: Toggle rhythmic UI breathing.
 - **Night Shift**: Dims inactive tasks late at night (10 PM - 5 AM).
+- **Hide Checked (For Today)**: When enabled, struck-through tasks are hidden from the "For Today" tab, keeping your active list clean and focused.
 - **Auto-Save**: Periodically syncs to your disk file (0 = Instant real-time saving).
 - **Focus Pings**: Periodic glow on active tasks, customizable/randomized browser notifications, and **Haptic Feedback** (Vibration) for mobile users. Includes a **Test Notification** preview button.
 - **Notification Customization**: Define a tailored notification message or toggle **Auto-Randomize Messages** to send fresh, randomized focus prompts.

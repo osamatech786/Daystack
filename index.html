@@ -1298,14 +1298,12 @@
     }
 
     @keyframes hintFloat {
-
       0%,
       100% {
-        transform: translateY(0);
+        transform: translateX(-50%) translateY(0);
       }
-
       50% {
-        transform: translateY(-5px);
+        transform: translateX(-50%) translateY(-5px);
       }
     }
 
@@ -1704,6 +1702,49 @@
     .sync-hint a {
       color: var(--pri-blue);
       text-decoration: none;
+    }
+
+    /* Today View Sections */
+    .today-section-container {
+      border-bottom: 4px solid var(--bg);
+    }
+    .today-section-container:last-child {
+      border-bottom: none;
+    }
+    .today-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.02);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--text);
+      opacity: 0.85;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    [data-theme="dark"] .today-section-header {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .today-section-header:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    [data-theme="dark"] .today-section-header:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .today-section-header i {
+      font-style: normal;
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+    .today-section-header.collapsed i {
+      transform: rotate(-90deg);
+    }
+    .today-section-content.collapsed {
+      display: none;
     }
   </style>
 </head>
@@ -2174,7 +2215,8 @@
         cloudSyncFreq: 0, // 0 for instant
         cloudRefreshOnReset: false,
         cloudLastSync: '',
-        gistIdToDelete: ''
+        gistIdToDelete: '',
+        hideStruckToday: false
       };
 
       data.settings = { ...defaultSettings, ...(data.settings || {}) };
@@ -2719,7 +2761,135 @@
   `;
     }
 
+    function renderColToday(filterFn) {
+      const content = document.getElementById('content-today');
+      const allTodayTasks = state.tasks.filter(filterFn);
+      const filteredTasks = applyFilters(allTodayTasks, 'today');
+
+      let habits = filteredTasks.filter(t => t.source === 'daily');
+      let targets = filteredTasks.filter(t => t.source === 'oneoff');
+
+      if (state.settings.hideStruckToday) {
+        habits = habits.filter(t => !t._struck);
+        targets = targets.filter(t => !t._struck);
+      }
+
+      if (!state.todaySectionsCollapsed) {
+        state.todaySectionsCollapsed = { habits: false, targets: false };
+      }
+
+      const habitsCollapsed = state.todaySectionsCollapsed.habits;
+      const targetsCollapsed = state.todaySectionsCollapsed.targets;
+
+      content.innerHTML = `
+        <div class="col-header">
+          <div style="display:flex; align-items:center;">
+            <span class="col-label" title="Current view context">For Today</span>
+            <button class="expand-all-btn" data-action="toggle-all-today-sections" title="Master Toggle: Expand/Collapse both sections">↕</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; color:#888; margin-right:4px;">
+              <input type="checkbox" id="toggle-hide-struck" ${state.settings.hideStruckToday ? 'checked' : ''} style="cursor:pointer;">
+              Hide checked
+            </label>
+            <button class="clear-btn" data-action="clear-tab" data-view="today" title="Clear all tasks from this view">Clear all</button>
+          </div>
+        </div>
+      `;
+
+      function renderSection(title, icon, tasks, isCollapsed, sectionKey) {
+        const groups = {};
+        tasks.forEach(t => {
+          const pid = t.projectId || 'none';
+          if (!groups[pid]) groups[pid] = [];
+          groups[pid].push(t);
+        });
+
+        const projectOrder = ['none', ...state.projects.map(p => p.id)];
+        const isNewUser = state.tasks.length === 0 && state.projects.length === 0;
+
+        let sectionHtml = `
+          <div class="today-section-container">
+            <div class="today-section-header ${isCollapsed ? 'collapsed' : ''}" data-action="toggle-today-section" data-section="${sectionKey}">
+              <span>${icon} ${title} <span class="badge" style="margin-left:4px;">${tasks.length}</span></span>
+              <i>▾</i>
+            </div>
+            <div class="today-section-content ${isCollapsed ? 'collapsed' : ''}">
+        `;
+
+        let hasTasks = false;
+        projectOrder.forEach(pid => {
+          const groupTasks = groups[pid] || [];
+          if (selectedProjectId !== 'all' && selectedProjectId !== pid) return;
+
+          // Show General group even if empty IF it's a new user or specifically selected
+          const shouldShowEmptyGeneral = (pid === 'none') && (isNewUser || selectedProjectId === 'none');
+          if (selectedProjectId === 'all' && groupTasks.length === 0 && !shouldShowEmptyGeneral) return;
+
+          hasTasks = true;
+          let project = state.projects.find(p => p.id === pid);
+          if (pid === 'none') {
+            project = { id: 'none', title: 'General', collapsed: state.generalCollapsed || {} };
+          }
+          if (!project) return;
+
+          const isProjCollapsed = project.collapsed && project.collapsed['today'];
+
+          sectionHtml += `
+            <div class="group-group">
+              <div class="group-header ${isProjCollapsed ? 'collapsed' : ''}" 
+                   data-action="toggle-group" data-pid="${pid}" data-view="today"
+                   title="Click to expand/collapse this group (Double-click to rename)">
+                <i>▾</i> ${esc(project.title)}
+                <div class="group-actions">
+                  ${pid !== 'none' ? `<button class="group-btn" data-action="delete-group" data-pid="${pid}" title="Delete this group (Tasks will move to General)">×</button>` : ''}
+                </div>
+              </div>
+              <div class="group-tasks ${isProjCollapsed ? 'collapsed' : ''}">
+                ${groupTasks.map(t => renderTask(t, 'today')).join('')}
+                <div class="add-row" style="padding: 8px 12px;">
+                  <input class="add-input" style="font-size: 12px; padding: 6px 10px;" 
+                    placeholder="Add task to ${esc(project.title)}..."
+                    data-action="add-task" data-view="today" data-pid="${pid}"
+                    data-source="${sectionKey === 'habits' ? 'daily' : 'oneoff'}">
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        if (tasks.length === 0 || !hasTasks) {
+          sectionHtml += `
+            <div class="empty-state" style="padding:16px;">
+              <div style="font-size:16px; margin-bottom:4px; opacity:0.3">🧘</div>
+              <div>No active tasks here</div>
+            </div>
+          `;
+        }
+
+        sectionHtml += `
+            </div>
+          </div>
+        `;
+        return sectionHtml;
+      }
+
+      content.innerHTML += renderSection('Habits & Routines', '🌿', habits, habitsCollapsed, 'habits');
+      content.innerHTML += renderSection('Daily Targets', '🎯', targets, targetsCollapsed, 'targets');
+
+      const badge = document.getElementById('badge-today');
+      if (badge) badge.textContent = filteredTasks.length;
+    }
+
     function renderCol(view, filterFn) {
+      if (view === 'today') {
+        const isNewUser = state.tasks.length === 0 && state.projects.length === 0;
+        if (!isNewUser) {
+          renderColToday(filterFn);
+          return;
+        }
+      }
+
       const content = document.getElementById('content-' + view);
       const filtered = applyFilters(state.tasks.filter(filterFn), view);
 
@@ -2994,7 +3164,7 @@
       const pid = input.dataset.pid;
       const val = input.value.trim();
       if (!val) return;
-      const source = view === 'recurring' ? 'daily' : 'oneoff';
+      const source = input.dataset.source || (view === 'recurring' ? 'daily' : 'oneoff');
       const dup = state.tasks.some(t => t.title.toLowerCase() === val.toLowerCase() && t.source === source);
       if (dup) { input.value = ''; return; }
       const newTask = {
@@ -3252,6 +3422,29 @@
 
       else if (action === 'clear-tab') {
         clearTab(actionEl.dataset.view);
+      }
+
+      else if (action === 'toggle-today-section') {
+        const section = actionEl.dataset.section;
+        if (!state.todaySectionsCollapsed) {
+          state.todaySectionsCollapsed = { habits: false, targets: false };
+        }
+        state.todaySectionsCollapsed[section] = !state.todaySectionsCollapsed[section];
+        save(state);
+        renderAll();
+      }
+
+      else if (action === 'toggle-all-today-sections') {
+        if (!state.todaySectionsCollapsed) {
+          state.todaySectionsCollapsed = { habits: false, targets: false };
+        }
+        const habitsCollapsed = state.todaySectionsCollapsed.habits;
+        const targetsCollapsed = state.todaySectionsCollapsed.targets;
+        const shouldCollapse = !(habitsCollapsed || targetsCollapsed);
+        state.todaySectionsCollapsed.habits = shouldCollapse;
+        state.todaySectionsCollapsed.targets = shouldCollapse;
+        save(state);
+        renderAll();
       }
 
     });
@@ -4025,14 +4218,14 @@
       currentTourStep = step;
 
       if (step === 1) {
-        const target = document.querySelector('.group-header');
+        const target = document.querySelector('.column.active .group-header');
         if (target) {
           createTourHint(target, 'Tasks are organized in Groups. "General" is your default home.', 'bottom');
           target.scrollIntoView({ behavior: 'smooth', block: 'center' });
           setTimeout(() => showTourStep(2), 3000);
         }
       } else if (step === 2) {
-        const target = document.querySelector('.add-input');
+        const target = document.querySelector('.column.active .add-input');
         if (target) {
           target.classList.add('highlight-target');
           createTourHint(target, 'Type your first task here and press Enter!', 'top');
@@ -4236,6 +4429,15 @@
         msgInput.style.cursor = 'auto';
         clearBtn.style.opacity = '1';
         clearBtn.style.cursor = 'pointer';
+      }
+    });
+
+    // Toggle hide struck today setting
+    document.addEventListener('change', e => {
+      if (e.target && e.target.id === 'toggle-hide-struck') {
+        state.settings.hideStruckToday = e.target.checked;
+        save(state);
+        renderAll();
       }
     });
 
