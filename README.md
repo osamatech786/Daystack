@@ -38,7 +38,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🌓 **Dynamic Theme**: Automatically switches between light and dark mode based on the time of day (Default).
 - ⚙️ **Settings Modal**: Redesigned premium glassmorphic panel with sticky navigation and enhanced aesthetics for effortless control.
 - ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
-- ☁️ **Smart Cloud Sync**: Dedicated `☁↑` (Push) and `☁↓` (Fetch) buttons in the header for total control. Performs an intelligent conflict check before every sync to prevent data loss.
+- ☁️ **Smart Cloud Sync**: Dedicated `☁↑` (Push) and `☁↓` (Fetch) buttons in the header for total control. Performs an intelligent conflict check before every sync to prevent data loss. Now features a **Visual Conflict Diff Modal** to compare local vs. cloud tasks before deciding.
 - 🚀 **Blazing Fast**: Single-page architecture with zero external dependencies.
 - 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars. Features an adaptive mobile layout that intelligently prioritizes space for controls on small screens.
 - ↕️ **Master Toggle**: Expand or collapse all groups in a tab with a single click.
@@ -177,7 +177,7 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 - **Auto-Save**: Manages background disk syncing. Now supports **Instant Save** (frequency 0) for truly real-time disk persistence.
 - **Focus Pings**: Triggers periodic visual nudges and cross-platform browser notifications.
 - **Cloud Sync**: Checks for remote updates every minute and intelligently syncs local changes (skips if no data has changed). Now features **Smart Sync** with dedicated header buttons (`☁↑` and `☁↓`) and a **Conflict Dialog** to prevent accidental overwrites.
-- **Intelligent Conflict Resolution**: Follows industry best practices by silently auto-pulling background updates when the cloud is newer and you have no unsaved local changes. If you do have local changes, it safely pauses sync and warns of the conflict, offering you the choice to either Restore (Fetch) or Overwrite (Push).
+- **Intelligent Conflict Resolution**: Follows industry best practices by silently auto-pulling background updates when the cloud is newer and you have no unsaved local changes. If you do have local changes, it safely pauses sync and warns of the conflict with a **Visual Diff Viewer**, showing exactly what will be added, removed, or changed if you choose to Pull or Push.
 
 ### Settings Modal
 Accessed via the ⚙️ icon. Controls:
@@ -201,6 +201,8 @@ Accessed via the ⚙️ icon. Controls:
 
 ## ⌨️ Keyboard Shortcuts
 - `Ctrl + S`: Save instantly to disk.
+- `Ctrl + Z`: Undo last deleted task.
+- `Ctrl + Y` or `Ctrl + Shift + Z`: Redo last deleted task.
 - `Alt + 1-4`: Switch tabs (Today, Progress, Done, Recurring).
 - `Enter`: Confirm task/subtask.
 - `Esc`: Cancel/Close inputs, or close Settings modal.
@@ -208,6 +210,7 @@ Accessed via the ⚙️ icon. Controls:
 ---
 
 ## 📱 Mobile Support
+- **Undo Support**: Tap the toast button after deleting a task to restore it instantly.
 - Double-tap or Long-press to rename tasks and groups.
 - Haptic feedback on touch interaction.
 - Responsive layout optimized for one-handed use.

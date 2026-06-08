@@ -1687,6 +1687,105 @@
       border-color: var(--text);
     }
 
+    /* Undo Toast */
+    .undo-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 12px 16px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5);
+      z-index: 3000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .undo-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .undo-toast button {
+      background: var(--bg);
+      color: var(--text);
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* Cloud Conflict Diff */
+    .diff-section {
+      margin-top: 18px;
+    }
+
+    .diff-section h4 {
+      margin: 0 0 8px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.6;
+    }
+
+    .diff-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .diff-item {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      border-left: 3px solid var(--border);
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    [data-theme="dark"] .diff-item {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .diff-item.add {
+      border-left-color: #16a34a;
+    }
+
+    .diff-item.remove {
+      border-left-color: #dc2626;
+    }
+
+    .diff-item.change {
+      border-left-color: #d97706;
+    }
+
+    .diff-empty {
+      opacity: 0.5;
+      font-size: 13px;
+      font-style: italic;
+      margin-top: 18px;
+    }
+
+    .diff-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .diff-actions .settings-btn {
+      padding: 14px 12px;
+      font-size: 14px;
+    }
+
     .token-input {
       width: 100% !important;
       margin-top: 8px;
@@ -2101,6 +2200,33 @@
       </div>
     </div>
   </div>
+  </div>
+
+  <!-- Undo Toast -->
+  <div id="undo-toast" class="undo-toast">
+    <span id="undo-toast-text">Task deleted</span>
+    <button id="undo-toast-btn" title="Restore last deleted task (Ctrl+Z)">↩ Undo</button>
+  </div>
+
+  <!-- Cloud Conflict Diff Modal -->
+  <div id="diff-overlay" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>☁ Sync Conflict</h2>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;opacity:0.7;margin:8px 0 0;">The cloud has changes. Review the differences below, then keep this
+          device's version (Push) or the cloud version (Pull).</p>
+        <div id="diff-body"></div>
+      </div>
+      <div class="modal-footer">
+        <div class="diff-actions">
+          <button class="settings-btn" id="btn-diff-pull">⬇ Pull from Cloud</button>
+          <button class="settings-btn pri" id="btn-diff-push">⬆ Overwrite Cloud</button>
+        </div>
+        <button class="settings-btn" id="btn-diff-cancel" style="width:100%;margin-top:10px;">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -2544,12 +2670,84 @@
       const localSynced = state.settings.cloudLastSync ? new Date(state.settings.cloudLastSync) : new Date(0);
 
       if (remoteUpdated && remoteUpdated > localSynced) {
-        if (confirm('Cloud has newer data. Would you like to RESTORE from cloud instead of pushing?\n\nOK = Restore (Fetch)\nCancel = Overwrite Cloud (Push)')) {
-          await syncFromCloud();
-          return;
-        }
+        await showConflictDiff();
+        return;
       }
       syncToCloud(true);
+    }
+
+    async function fetchRemoteData() {
+      const token = (state.settings.cloudToken || '').trim();
+      const gistId = (state.settings.cloudGistId || '').trim();
+      if (!token || !gistId) return null;
+      const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch Gist');
+      const gist = await response.json();
+      const file = gist.files['daystack-data.json'];
+      if (!file) throw new Error('Daystack data not found in Gist');
+      return JSON.parse(file.content);
+    }
+
+    function computeTaskDiff(localTasks, remoteTasks) {
+      const statusOf = t => t._done ? 'Done' : (t._struck ? 'In Progress' : 'For Today');
+      const localById = {};
+      localTasks.forEach(t => localById[t.id] = t);
+      const remoteById = {};
+      remoteTasks.forEach(t => remoteById[t.id] = t);
+      const onlyLocal = localTasks.filter(t => !remoteById[t.id]);
+      const onlyRemote = remoteTasks.filter(t => !localById[t.id]);
+      const changed = [];
+      localTasks.forEach(t => {
+        const r = remoteById[t.id];
+        if (r && (r.title !== t.title || statusOf(r) !== statusOf(t) || r.source !== t.source)) {
+          changed.push({ local: t, remote: r });
+        }
+      });
+      return { onlyLocal, onlyRemote, changed, statusOf };
+    }
+
+    async function showConflictDiff() {
+      updateCloudStatus('Checking...', 'syncing');
+      let remote;
+      try {
+        remote = await fetchRemoteData();
+      } catch (e) {
+        updateCloudStatus('Error: ' + e.message, 'cloud-error');
+        alert('Could not load cloud data for comparison: ' + e.message);
+        return;
+      }
+      if (!remote) { syncToCloud(true); return; }
+
+      const { onlyLocal, onlyRemote, changed, statusOf } = computeTaskDiff(state.tasks, remote.tasks || []);
+
+      const section = (title, items, render) => {
+        if (!items.length) return '';
+        return `<div class="diff-section"><h4>${title} (${items.length})</h4>` +
+          `<div class="diff-list">${items.map(render).join('')}</div></div>`;
+      };
+
+      let html = '';
+      html += section('On this device only (kept if you Push, lost if you Pull)', onlyLocal,
+        t => `<div class="diff-item add">${esc(t.title)} <span style="opacity:.5">· ${statusOf(t)}</span></div>`);
+      html += section('In cloud only (added if you Pull, removed if you Push)', onlyRemote,
+        t => `<div class="diff-item remove">${esc(t.title)} <span style="opacity:.5">· ${statusOf(t)}</span></div>`);
+      html += section('Changed (this device → cloud)', changed, c => {
+        const titleChanged = c.local.title !== c.remote.title;
+        const left = titleChanged ? `${esc(c.local.title)} → ${esc(c.remote.title)}` : esc(c.local.title);
+        return `<div class="diff-item change">${left} <span style="opacity:.5">· ${statusOf(c.local)} → ${statusOf(c.remote)}</span></div>`;
+      });
+      if (!html) {
+        html = `<p class="diff-empty">No task differences detected (changes may be in settings or groups).</p>`;
+      }
+
+      document.getElementById('diff-body').innerHTML = html;
+      document.getElementById('diff-overlay').classList.add('show');
+      updateCloudStatus('New update in cloud', 'cloud-error');
     }
 
     async function handleCloudFetch() {
@@ -2875,7 +3073,7 @@
       }
 
       content.innerHTML += renderSection('Habits & Routines', '🌿', habits, habitsCollapsed, 'habits');
-      content.innerHTML += renderSection('Daily Targets', '🎯', targets, targetsCollapsed, 'targets');
+      content.innerHTML += renderSection('Targets for Today', '🎯', targets, targetsCollapsed, 'targets');
 
       const badge = document.getElementById('badge-today');
       if (badge) badge.textContent = filteredTasks.length;
@@ -3054,10 +3252,54 @@
       renderAll();
     }
 
+    let lastDeletedTask = null;
+    let lastRestoredTask = null;
+    let _undoToastTimer = null;
+
     function deleteTask(taskId) {
+      const t = state.tasks.find(t => t.id === taskId);
+      if (!t) return;
+      lastDeletedTask = JSON.parse(JSON.stringify(t));
+      lastRestoredTask = null; // new delete clears redo
       state.tasks = state.tasks.filter(t => t.id !== taskId);
       save(state);
       renderAll();
+      showUndoToast('Task deleted', 'undo');
+    }
+
+    function showUndoToast(msg, mode) {
+      const toast = document.getElementById('undo-toast');
+      const btn = document.getElementById('undo-toast-btn');
+      document.getElementById('undo-toast-text').textContent = msg;
+      btn.textContent = mode === 'redo' ? '↺ Redo' : '↩ Undo';
+      btn.onclick = mode === 'redo' ? redoDelete : restoreLastDeleted;
+      toast.classList.add('show');
+      clearTimeout(_undoToastTimer);
+      _undoToastTimer = setTimeout(() => toast.classList.remove('show'), 6000);
+    }
+
+    function hideUndoToast() {
+      document.getElementById('undo-toast').classList.remove('show');
+    }
+
+    function restoreLastDeleted() {
+      if (!lastDeletedTask) return;
+      lastRestoredTask = lastDeletedTask;
+      state.tasks.push(lastDeletedTask);
+      lastDeletedTask = null;
+      save(state);
+      renderAll();
+      showUndoToast('Task restored', 'redo');
+    }
+
+    function redoDelete() {
+      if (!lastRestoredTask) return;
+      lastDeletedTask = lastRestoredTask;
+      lastRestoredTask = null;
+      state.tasks = state.tasks.filter(t => t.id !== lastDeletedTask.id);
+      save(state);
+      renderAll();
+      showUndoToast('Task deleted', 'undo');
     }
 
     function toggleRecurring(taskId) {
@@ -3479,6 +3721,24 @@
         saveToFile();
       }
 
+      // Ctrl + Z to undo last deleted task (ignore while typing in fields)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        const tag = (e.target.tagName || '').toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea' && !e.target.isContentEditable && lastDeletedTask) {
+          e.preventDefault();
+          restoreLastDeleted();
+        }
+      }
+
+      // Ctrl + Y or Ctrl + Shift + Z to redo (re-delete restored task)
+      if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) {
+        const tag = (e.target.tagName || '').toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea' && !e.target.isContentEditable && lastRestoredTask) {
+          e.preventDefault();
+          redoDelete();
+        }
+      }
+
       // Alt + 1/2/3/4 for tab switching
       if (e.altKey && e.key >= '1' && e.key <= '4') {
         e.preventDefault();
@@ -3694,6 +3954,26 @@
       handleCloudFetch();
     });
     document.getElementById('btn-cloud-restore').addEventListener('click', () => handleCloudFetch());
+
+    // Cloud Conflict Diff Modal
+    document.getElementById('btn-diff-push').addEventListener('click', () => {
+      document.getElementById('diff-overlay').classList.remove('show');
+      syncToCloud(true);
+    });
+    document.getElementById('btn-diff-pull').addEventListener('click', () => {
+      document.getElementById('diff-overlay').classList.remove('show');
+      syncFromCloud();
+    });
+    document.getElementById('btn-diff-cancel').addEventListener('click', () => {
+      document.getElementById('diff-overlay').classList.remove('show');
+      updateCloudStatus('New update in cloud', 'cloud-error');
+    });
+    document.getElementById('diff-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'diff-overlay') {
+        document.getElementById('diff-overlay').classList.remove('show');
+        updateCloudStatus('New update in cloud', 'cloud-error');
+      }
+    });
 
     document.getElementById('btn-settings').addEventListener('click', toggleSettings);
 
