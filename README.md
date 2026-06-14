@@ -27,6 +27,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 ## Key Features
 
 - ✨ **Premium Design**: Modern, clean, glassmorphic UI with smooth micro-animations.
+- 🎯 **Rotating Goal Stack**: Define multiple daily goals that automatically rotate like a slideshow to keep you inspired. Customize the rotation speed and edit goals easily with an expanding minimalist textarea.
 - 📁 **Pro File Handling**: Overwrites existing files using the File System Access API (no duplicate downloads!).
 - ⌨️ **Power User Shortcuts**: Press `Ctrl + S` to save instantly, and `Esc` to close settings or inputs.
 - 💾 **Persistence**: Active file handle is saved in IndexedDB; it remembers your file even after a refresh.

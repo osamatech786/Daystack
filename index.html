@@ -933,6 +933,54 @@
       opacity: 0.9;
     }
 
+    /* Goal Stack */
+    .goal-container {
+      padding: 0 16px 12px;
+      position: relative;
+    }
+    .goal-display {
+      width: 100%;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px 12px;
+      border-bottom: 2px dashed transparent;
+      transition: all 0.5s ease-in-out;
+      opacity: 1;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.4;
+    }
+    .goal-display:hover {
+      border-bottom-color: var(--border);
+    }
+    .goal-display.fade {
+      opacity: 0;
+    }
+    .goal-editor {
+      width: 100%;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      outline: none;
+      border-radius: 8px;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+      display: none;
+      line-height: 1.5;
+    }
+    .goal-editor:focus {
+      border-style: solid;
+      border-color: var(--text);
+    }
+
     /* Search Bar */
     .search-wrap {
       display: flex;
@@ -1864,6 +1912,11 @@
         </div>
       </div>
 
+      <div class="goal-container">
+        <div id="goal-display" class="goal-display" title="Click to edit your goals">Click to set your daily goals...</div>
+        <textarea id="goal-editor" class="goal-editor" placeholder="Type your goals here... (One per line)"></textarea>
+      </div>
+
       <div class="search-wrap">
         <input type="text" class="search-input" id="search-tasks" placeholder="Search tasks, groups, or subtasks...">
         <div class="file-btns">
@@ -2100,6 +2153,16 @@
         <div class="settings-section">
           <div class="settings-row">
             <div class="settings-info">
+              <div class="settings-label">Goal Rotation Speed</div>
+              <div class="settings-desc">Seconds between changing the active goal (default: 10).</div>
+            </div>
+            <input type="number" id="set-goal-rotation-freq" class="settings-input" min="1" max="60">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-row">
+            <div class="settings-info">
               <div class="settings-label">Auto-Save to File</div>
               <div class="settings-desc">Periodically write changes to your active file.</div>
             </div>
@@ -2318,6 +2381,10 @@
       const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
       if (!data.tasks) data.tasks = [];
       if (!data.projects) data.projects = [];
+      if (!data.goals) {
+        data.goals = data.goal ? [data.goal] : [];
+        delete data.goal;
+      }
       if (!data.lastActiveDate) data.lastActiveDate = today();
 
       // Default Settings
@@ -2328,6 +2395,7 @@
         resetTime: '00:00',
         autoSave: true,
         autoSaveFreq: 10,
+        goalRotationFreq: 10,
         savePulse: true,
         focusPings: false,
         focusFreq: 25,
@@ -2629,6 +2697,7 @@
         // Update state
         state.tasks = imported.tasks || [];
         state.projects = imported.projects || [];
+        state.goals = imported.goals || (imported.goal ? [imported.goal] : []);
         state.generalCollapsed = imported.generalCollapsed || {};
 
         // Capture local-only credentials BEFORE merging settings
@@ -2857,6 +2926,61 @@
     }
 
     let state = load();
+    
+    // Goal Stack Logic
+    let currentGoalIndex = 0;
+    let goalInterval = null;
+    const goalDisplay = document.getElementById('goal-display');
+    const goalEditor = document.getElementById('goal-editor');
+
+    function startGoalRotation() {
+      clearInterval(goalInterval);
+      if (!state.goals || state.goals.length === 0) {
+        if (goalDisplay) goalDisplay.textContent = 'Click to set your daily goals...';
+        return;
+      }
+      
+      const updateDisplay = () => {
+        if (state.goals.length === 0) return;
+        goalDisplay.classList.add('fade');
+        setTimeout(() => {
+          goalDisplay.textContent = state.goals[currentGoalIndex];
+          goalDisplay.classList.remove('fade');
+          currentGoalIndex = (currentGoalIndex + 1) % state.goals.length;
+        }, 500);
+      };
+      
+      goalDisplay.textContent = state.goals[0];
+      currentGoalIndex = state.goals.length > 1 ? 1 : 0;
+
+      if (state.goals.length > 1) {
+        const freq = (state.settings.goalRotationFreq || 10) * 1000;
+        goalInterval = setInterval(updateDisplay, freq);
+      }
+    }
+
+    if (goalDisplay && goalEditor) {
+      goalDisplay.addEventListener('click', () => {
+        clearInterval(goalInterval);
+        goalDisplay.style.display = 'none';
+        goalEditor.style.display = 'block';
+        goalEditor.value = (state.goals || []).join('\n');
+        goalEditor.focus();
+      });
+
+      goalEditor.addEventListener('blur', () => {
+        const val = goalEditor.value.trim();
+        state.goals = val ? val.split('\n').map(g => g.trim()).filter(g => g) : [];
+        save(state);
+        goalEditor.style.display = 'none';
+        goalDisplay.style.display = 'block';
+        currentGoalIndex = 0;
+        startGoalRotation();
+      });
+      
+      startGoalRotation();
+    }
+    
     performDailyReset(state); // Ensure correct reset state on boot
 
     const filterState = {
@@ -3811,6 +3935,7 @@
         document.getElementById('set-night-shift').checked = state.settings.nightShift;
         document.getElementById('set-auto-save').checked = state.settings.autoSave;
         document.getElementById('set-auto-save-freq').value = state.settings.autoSaveFreq;
+        document.getElementById('set-goal-rotation-freq').value = state.settings.goalRotationFreq || 10;
         document.getElementById('set-save-pulse').checked = state.settings.savePulse;
         document.getElementById('set-focus-pings').checked = state.settings.focusPings;
         document.getElementById('set-focus-freq').value = state.settings.focusFreq;
@@ -3864,6 +3989,14 @@
         let newAutoSaveFreq = parseInt(document.getElementById('set-auto-save-freq').value);
         if (isNaN(newAutoSaveFreq)) newAutoSaveFreq = 10;
         if (state.settings.autoSaveFreq !== newAutoSaveFreq) { state.settings.autoSaveFreq = newAutoSaveFreq; changed = true; }
+
+        let newGoalRotFreq = parseInt(document.getElementById('set-goal-rotation-freq').value);
+        if (isNaN(newGoalRotFreq) || newGoalRotFreq < 1) newGoalRotFreq = 10;
+        if (state.settings.goalRotationFreq !== newGoalRotFreq) { 
+          state.settings.goalRotationFreq = newGoalRotFreq; 
+          changed = true; 
+          startGoalRotation(); // apply immediately 
+        }
 
         setBool('savePulse', document.getElementById('set-save-pulse').checked);
         setBool('focusPings', document.getElementById('set-focus-pings').checked);
