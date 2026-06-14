@@ -4769,6 +4769,7 @@
 
         state.tasks = imported.tasks || [];
         state.projects = imported.projects || [];
+        state.goals = imported.goals || (imported.goal ? [imported.goal] : []);
         state.generalCollapsed = imported.generalCollapsed || {};
 
         // Capture local-only credentials BEFORE merging settings
@@ -4864,6 +4865,7 @@
           const imported = JSON.parse(ev.target.result);
           state.tasks = imported.tasks || [];
           state.projects = imported.projects || [];
+          state.goals = imported.goals || (imported.goal ? [imported.goal] : []);
           state.generalCollapsed = imported.generalCollapsed || {};
 
           const localToken = state.settings.cloudToken;
