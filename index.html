@@ -2415,6 +2415,15 @@
 
       data.settings = { ...defaultSettings, ...(data.settings || {}) };
 
+      if (!data.filterState) {
+        data.filterState = {
+          today: { pri: 'all', status: 'all', sort: false },
+          progress: { pri: 'all', sort: false },
+          done: { pri: 'all', sort: false },
+          recurring: { pri: 'all', sort: false }
+        };
+      }
+
       return performDailyReset(data);
     }
 
@@ -2926,6 +2935,9 @@
     }
 
     let state = load();
+    if (state.selectedProjectId) {
+      selectedProjectId = state.selectedProjectId;
+    }
     
     // Goal Stack Logic
     let currentGoalIndex = 0;
@@ -2983,12 +2995,7 @@
     
     performDailyReset(state); // Ensure correct reset state on boot
 
-    const filterState = {
-      today: { pri: 'all', status: 'all', sort: false },
-      progress: { pri: 'all', sort: false },
-      done: { pri: 'all', sort: false },
-      recurring: { pri: 'all', sort: false }
-    };
+    const filterState = state.filterState;
 
     const PRI_ORDER = { red: 0, yellow: 1, blue: 2, green: 2, none: 3 };
 
@@ -3306,7 +3313,18 @@
 
     function isInProgress(t) { return t._struck && !t._done; }
 
+    function syncFilterUI() {
+      ['today', 'progress', 'done', 'recurring'].forEach(col => {
+        const fs = filterState[col];
+        if (!fs) return;
+        document.querySelectorAll(`[data-col="${col}"][data-filt-pri]`).forEach(b => b.classList.toggle('active', b.dataset.filtPri === (fs.pri || 'all')));
+        document.querySelectorAll(`[data-col="${col}"][data-filt-status]`).forEach(b => b.classList.toggle('active', b.dataset.filtStatus === (fs.status || 'all')));
+        document.querySelectorAll(`.sort-btn[data-col="${col}"]`).forEach(b => b.classList.toggle('active', !!fs.sort));
+      });
+    }
+
     function renderAll() {
+      syncFilterUI();
       // Group Bar
       const gBar = document.getElementById('group-bar');
       if (gBar) {
@@ -3665,6 +3683,7 @@
         const col = btn.dataset.col;
         const pri = btn.dataset.filtPri;
         filterState[col].pri = pri;
+        save(state);
         document.querySelectorAll(`[data-col="${col}"][data-filt-pri]`).forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         renderAll();
@@ -3676,6 +3695,7 @@
         const col = btn.dataset.col;
         const status = btn.dataset.filtStatus;
         filterState[col].status = status;
+        save(state);
         document.querySelectorAll(`[data-col="${col}"][data-filt-status]`).forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         renderAll();
@@ -3686,6 +3706,7 @@
         const btn = e.target.closest('.sort-btn');
         const col = btn.dataset.col;
         filterState[col].sort = !filterState[col].sort;
+        save(state);
         btn.classList.toggle('active', filterState[col].sort);
         renderAll();
         return;
@@ -3773,6 +3794,8 @@
       else if (action === 'filter-group') {
         if (e.detail === 2) { renameGroup(actionEl.dataset.pid); return; }
         selectedProjectId = actionEl.dataset.pid;
+        state.selectedProjectId = selectedProjectId;
+        save(state);
         renderAll();
       }
 
