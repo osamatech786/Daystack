@@ -1895,6 +1895,75 @@
     .today-section-content.collapsed {
       display: none;
     }
+
+    /* Bulk Select Mode */
+    .bulk-chk {
+      display: none;
+      margin-right: 8px;
+      transform: scale(1.2);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .bulk-select-mode .bulk-chk {
+      display: inline-block;
+    }
+    .bulk-select-mode .task-row, .bulk-select-mode .subtask-row {
+      padding-left: 8px;
+    }
+    .bulk-select-mode .task-title, .bulk-select-mode .subtask-title {
+      cursor: pointer;
+    }
+    .bulk-action-bar {
+      position: fixed;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text);
+      color: var(--bg);
+      padding: 12px 20px;
+      border-radius: 20px;
+      display: flex;
+      gap: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+    }
+    .bulk-action-bar.show {
+      bottom: 24px;
+    }
+    .bulk-action-btn {
+      background: transparent;
+      color: var(--bg);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    [data-theme="dark"] .bulk-action-btn {
+      border: 1px solid rgba(0,0,0,0.3);
+    }
+    .bulk-action-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    [data-theme="dark"] .bulk-action-btn:hover {
+      background: rgba(0,0,0,0.1);
+    }
+    .bulk-action-btn.danger {
+      color: #ff8a8a;
+      border-color: rgba(255, 138, 138, 0.3);
+    }
+    .bulk-action-btn.danger:hover {
+      background: rgba(255, 138, 138, 0.1);
+    }
+    [data-theme="dark"] .bulk-action-btn.danger {
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    [data-theme="dark"] .bulk-action-btn.danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
   </style>
 </head>
 
@@ -1934,6 +2003,7 @@
           </div>
           <button class="file-btn" id="btn-import">Load</button>
           <input type="file" id="file-import" accept=".json" style="display:none">
+          <button class="file-btn" id="btn-bulk-select" title="Multi-Select">☑</button>
           <button class="file-btn" id="btn-theme" title="Toggle theme">☀</button>
           <button class="file-btn" id="btn-settings" title="Open Settings">⚙</button>
         </div>
@@ -2081,6 +2151,16 @@
             </div>
             <label class="switch">
               <input type="checkbox" id="set-night-shift">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <div class="settings-label">Multi-Select</div>
+              <div class="settings-desc">Enable bulk selection mode to copy or delete multiple tasks.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-multi-select">
               <span class="slider"></span>
             </label>
           </div>
@@ -2303,6 +2383,13 @@
     </div>
   </div>
 
+  <div class="bulk-action-bar" id="bulk-action-bar">
+    <button class="bulk-action-btn" id="btn-bulk-copy">Copy Text</button>
+
+    <button class="bulk-action-btn danger" id="btn-bulk-delete">Delete</button>
+    <button class="bulk-action-btn" id="btn-bulk-cancel">Cancel</button>
+  </div>
+
   <script>
     const STORAGE_KEY = 'taskTracker_v1';
 
@@ -2421,7 +2508,8 @@
         cloudRefreshOnReset: false,
         cloudLastSync: '',
         gistIdToDelete: '',
-        hideStruckToday: false
+        hideStruckToday: false,
+        multiSelect: true
       };
 
       data.settings = { ...defaultSettings, ...(data.settings || {}) };
@@ -3064,6 +3152,7 @@
 
       const subtasksHtml = task.subtasks.map(s => `
     <div class="subtask-row" data-subid="${s.id}">
+      <input type="checkbox" class="bulk-chk" data-type="subtask" data-tid="${task.id}" data-sid="${s.id}">
       <span class="chk ${s.done ? 'checked' : ''}" data-action="toggle-sub" data-tid="${task.id}" data-sid="${s.id}">${s.done ? '●' : '○'}</span>
       <span class="subtask-title ${s.done ? 'struck' : ''}">${esc(s.title)}</span>
       <button class="sub-del-btn" data-action="delete-sub" data-tid="${task.id}" data-sid="${s.id}" title="Delete subtask">×</button>
@@ -3078,6 +3167,7 @@
       return `
     <div class="task ${inProgressClass}" data-id="${task.id}">
       <div class="task-row">
+        <input type="checkbox" class="bulk-chk" data-type="task" data-id="${task.id}">
         <div class="pri-picker">
           <span class="pri-dot pri-${task.priority || 'none'}" data-action="toggle-pri" data-tid="${task.id}" data-view="${view}" title="Click to set priority"></span>
           <div class="pri-menu" id="pri-menu-${view}-${task.id}">
@@ -3420,12 +3510,32 @@
       showUndoToast('Task deleted', 'undo');
     }
 
+    function restoreBulkDeleted() {
+      if (typeof lastDeletedItemsBulk === 'undefined' || lastDeletedItemsBulk.length === 0) return;
+      lastDeletedItemsBulk.forEach(item => {
+        if (item.type === 'task') {
+          state.tasks.push(item.task);
+        } else if (item.type === 'subtask') {
+          const t = state.tasks.find(x => x.id === item.tid);
+          if (t) t.subtasks.push(item.subtask);
+        }
+      });
+      lastDeletedItemsBulk = [];
+      save(state);
+      renderAll();
+      hideUndoToast();
+    }
+
     function showUndoToast(msg, mode) {
       const toast = document.getElementById('undo-toast');
       const btn = document.getElementById('undo-toast-btn');
       document.getElementById('undo-toast-text').textContent = msg;
       btn.textContent = mode === 'redo' ? '↺ Redo' : '↩ Undo';
-      btn.onclick = mode === 'redo' ? redoDelete : restoreLastDeleted;
+      if (mode === 'bulk-undo') {
+        btn.onclick = restoreBulkDeleted;
+      } else {
+        btn.onclick = mode === 'redo' ? redoDelete : restoreLastDeleted;
+      }
       toast.classList.add('show');
       clearTimeout(_undoToastTimer);
       _undoToastTimer = setTimeout(() => toast.classList.remove('show'), 6000);
@@ -3688,6 +3798,30 @@
     // ── Event delegation ───────────────────────────────────────
 
     document.addEventListener('click', e => {
+      if (typeof bulkSelectMode !== 'undefined' && bulkSelectMode) {
+        if (e.target.closest('.bulk-action-bar')) return;
+        if (e.target.closest('#btn-bulk-select')) return;
+        if (e.target.classList.contains('bulk-chk')) return;
+
+        const row = e.target.closest('.task-row, .subtask-row');
+        if (row && !e.target.closest('.del-btn') && !e.target.closest('.sub-del-btn') && !e.target.closest('.pri-picker') && !e.target.closest('.recur-icon')) {
+          const chk = row.querySelector('.bulk-chk');
+          if (chk) {
+            chk.checked = !chk.checked;
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          return;
+        }
+
+        const actionEl = e.target.closest('[data-action]');
+        if (actionEl && ['task-click', 'toggle-sub', 'toggle-pri', 'undo'].includes(actionEl.dataset.action)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+      }
+
       // Filter/sort buttons — no data-action, check first
       if (e.target.closest('[data-filt-pri]')) {
         const btn = e.target.closest('[data-filt-pri]');
@@ -4106,6 +4240,7 @@
         // Fill inputs from state
         document.getElementById('set-zen-breath').checked = state.settings.zenBreath;
         document.getElementById('set-night-shift').checked = state.settings.nightShift;
+        document.getElementById('set-multi-select').checked = state.settings.multiSelect;
         document.getElementById('set-auto-save').checked = state.settings.autoSave;
         document.getElementById('set-auto-save-freq').value = state.settings.autoSaveFreq;
         document.getElementById('set-goal-rotation-freq').value = state.settings.goalRotationFreq || 10;
@@ -4157,6 +4292,12 @@
 
         setBool('zenBreath', document.getElementById('set-zen-breath').checked);
         setBool('nightShift', document.getElementById('set-night-shift').checked);
+        setBool('multiSelect', document.getElementById('set-multi-select').checked);
+        
+        document.getElementById('btn-bulk-select').style.display = state.settings.multiSelect ? 'inline-block' : 'none';
+        if (!state.settings.multiSelect && typeof bulkSelectMode !== 'undefined' && bulkSelectMode) {
+          document.getElementById('btn-bulk-cancel').click();
+        }
         setBool('autoSave', document.getElementById('set-auto-save').checked);
 
         let newAutoSaveFreq = parseInt(document.getElementById('set-auto-save-freq').value);
@@ -5067,6 +5208,96 @@
       };
       reader.readAsText(file);
       e.target.value = '';
+    });
+
+    // Bulk Select Feature
+    let bulkSelectMode = false;
+    document.getElementById('btn-bulk-select').style.display = state.settings.multiSelect ? 'inline-block' : 'none';
+    let lastDeletedItemsBulk = [];
+
+    document.getElementById('btn-bulk-select').addEventListener('click', () => {
+      bulkSelectMode = !bulkSelectMode;
+      document.body.classList.toggle('bulk-select-mode', bulkSelectMode);
+      document.getElementById('bulk-action-bar').classList.toggle('show', bulkSelectMode);
+      document.querySelectorAll('.bulk-chk').forEach(chk => chk.checked = false);
+    });
+
+    document.getElementById('btn-bulk-cancel').addEventListener('click', () => {
+      bulkSelectMode = false;
+      document.body.classList.remove('bulk-select-mode');
+      document.getElementById('bulk-action-bar').classList.remove('show');
+      document.querySelectorAll('.bulk-chk').forEach(chk => chk.checked = false);
+    });
+
+    function getSelectedBulkItems() {
+      const selected = [];
+      document.querySelectorAll('.bulk-chk:checked').forEach(chk => {
+        if (chk.dataset.type === 'task') {
+          selected.push({ type: 'task', id: chk.dataset.id });
+        } else if (chk.dataset.type === 'subtask') {
+          selected.push({ type: 'subtask', tid: chk.dataset.tid, sid: chk.dataset.sid });
+        }
+      });
+      return selected;
+    }
+
+    document.getElementById('btn-bulk-copy').addEventListener('click', () => {
+      const items = getSelectedBulkItems();
+      if (items.length === 0) return;
+      
+      let textLines = [];
+      items.forEach(item => {
+        if (item.type === 'task') {
+          const t = state.tasks.find(x => x.id === item.id);
+          if (t) textLines.push(`• ${t.title}`);
+        } else if (item.type === 'subtask') {
+          const t = state.tasks.find(x => x.id === item.tid);
+          if (t) {
+            const s = t.subtasks.find(x => x.id === item.sid);
+            if (s) textLines.push(`  - ${s.title}`);
+          }
+        }
+      });
+      
+      navigator.clipboard.writeText(textLines.join('\n')).then(() => {
+        document.getElementById('btn-bulk-copy').textContent = 'Copied!';
+        setTimeout(() => document.getElementById('btn-bulk-copy').textContent = 'Copy Text', 2000);
+      });
+    });
+
+
+
+    document.getElementById('btn-bulk-delete').addEventListener('click', () => {
+      const items = getSelectedBulkItems();
+      if (items.length === 0) return;
+      
+      lastDeletedItemsBulk = [];
+      
+      // Delete subtasks first
+      items.filter(i => i.type === 'subtask').forEach(item => {
+        const t = state.tasks.find(x => x.id === item.tid);
+        if (t) {
+          const idx = t.subtasks.findIndex(x => x.id === item.sid);
+          if (idx !== -1) {
+            lastDeletedItemsBulk.push({ type: 'subtask', tid: item.tid, subtask: JSON.parse(JSON.stringify(t.subtasks[idx])) });
+            t.subtasks.splice(idx, 1);
+          }
+        }
+      });
+      
+      // Delete tasks
+      items.filter(i => i.type === 'task').forEach(item => {
+        const idx = state.tasks.findIndex(x => x.id === item.id);
+        if (idx !== -1) {
+          lastDeletedItemsBulk.push({ type: 'task', task: JSON.parse(JSON.stringify(state.tasks[idx])) });
+          state.tasks.splice(idx, 1);
+        }
+      });
+      
+      save(state);
+      renderAll();
+      
+      showUndoToast(`${lastDeletedItemsBulk.length} items deleted`, 'bulk-undo');
     });
   </script>
 </body>
