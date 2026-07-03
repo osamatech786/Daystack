@@ -377,6 +377,7 @@
       cursor: pointer;
       font-size: 14px;
       line-height: 1.4;
+      white-space: pre-wrap;
     }
 
     .task-title.struck {
@@ -651,6 +652,7 @@
 
     .subtask-title {
       font-size: 13px;
+      white-space: pre-wrap;
     }
 
     .subtask-title.struck {
@@ -2054,7 +2056,10 @@
   <div id="settings-overlay" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
-        <h2><span class="zen-element">🧘</span> Settings</h2>
+        <h2 style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <span><span class="zen-element">🧘</span> Settings</span>
+          <button id="btn-clear-all" title="Clear all data" style="background: none; border: none; color: var(--text); opacity: 0.05; font-size: 14px; cursor: pointer; padding: 0 4px;">×</button>
+        </h2>
       </div>
 
       <div class="modal-body">
@@ -2269,6 +2274,12 @@
   <div id="undo-toast" class="undo-toast">
     <span id="undo-toast-text">Task deleted</span>
     <button id="undo-toast-btn" title="Restore last deleted task (Ctrl+Z)">↩ Undo</button>
+  </div>
+
+  <!-- Merge Toast -->
+  <div id="merge-toast" class="undo-toast" style="bottom: 80px;">
+    <span id="merge-toast-text">Pasted 4 tasks</span>
+    <button id="merge-toast-btn" title="Merge into a single task">Merge</button>
   </div>
 
   <!-- Cloud Conflict Diff Modal -->
@@ -3838,6 +3849,145 @@
 
     });
 
+    let _mergeToastTimer = null;
+    let _lastPastedItems = null;
+
+    function showMergeToast(count, itemsInfo) {
+      const toast = document.getElementById('merge-toast');
+      document.getElementById('merge-toast-text').textContent = `Pasted ${count} ${itemsInfo.type}s`;
+      _lastPastedItems = itemsInfo;
+      toast.classList.add('show');
+      clearTimeout(_mergeToastTimer);
+      _mergeToastTimer = setTimeout(() => toast.classList.remove('show'), 6000);
+    }
+
+    document.getElementById('merge-toast-btn').addEventListener('click', () => {
+      if (!_lastPastedItems) return;
+      const { type, ids, originalText, parentId, view, pid, source } = _lastPastedItems;
+      
+      if (type === 'task') {
+        state.tasks = state.tasks.filter(t => !ids.includes(t.id));
+        const dup = state.tasks.some(t => t.title.toLowerCase() === originalText.toLowerCase() && t.source === source);
+        if (!dup) {
+          state.tasks.push({
+            id: Date.now() + Math.random().toString(36).slice(2),
+            title: originalText,
+            projectId: pid || 'none',
+            source,
+            priority: 'none',
+            subtasks: [],
+            createdAt: new Date().toISOString(),
+            _struck: false,
+            _done: false,
+            _undone: false,
+            order: state.tasks.length
+          });
+        }
+      } else if (type === 'subtask') {
+        const t = state.tasks.find(t => t.id === parentId);
+        if (t) {
+          t.subtasks = t.subtasks.filter(s => !ids.includes(s.id));
+          t.subtasks.push({
+            id: Date.now() + Math.random().toString(36).slice(2),
+            title: originalText,
+            done: false
+          });
+        }
+      }
+      document.getElementById('merge-toast').classList.remove('show');
+      _lastPastedItems = null;
+      save(state);
+      renderAll();
+    });
+
+    document.addEventListener('paste', e => {
+      const target = e.target;
+      const isTaskInput = target.classList.contains('add-input');
+      const isSubtaskInput = target.classList.contains('sub-input');
+      if (!isTaskInput && !isSubtaskInput) return;
+
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      if (!text || !text.includes('\n')) return;
+
+      const valBefore = target.value.substring(0, target.selectionStart);
+      const valAfter = target.value.substring(target.selectionEnd);
+      const combinedText = valBefore + text + valAfter;
+      
+      const lines = combinedText.split('\n').map(l => l.trim()).filter(l => l);
+      if (lines.length <= 1) return;
+
+      e.preventDefault();
+
+      const originalText = combinedText.trim();
+
+      if (isTaskInput) {
+        const view = target.dataset.view;
+        const pid = target.dataset.pid;
+        const source = target.dataset.source || (view === 'recurring' ? 'daily' : 'oneoff');
+        const ids = [];
+        
+        lines.forEach(val => {
+          const dup = state.tasks.some(t => t.title.toLowerCase() === val.toLowerCase() && t.source === source);
+          if (dup) return;
+          const id = Date.now() + Math.random().toString(36).slice(2);
+          ids.push(id);
+          state.tasks.push({
+            id,
+            title: val,
+            projectId: pid || 'none',
+            source,
+            priority: 'none',
+            subtasks: [],
+            createdAt: new Date().toISOString(),
+            _struck: false,
+            _done: false,
+            _undone: false,
+            order: state.tasks.length
+          });
+        });
+
+        target.value = '';
+        save(state);
+        renderAll();
+        
+        if (ids.length > 0) {
+          showMergeToast(ids.length, { type: 'task', ids, originalText, view, pid, source });
+        }
+        
+        setTimeout(() => {
+          const pidSelector = pid ? `[data-pid="${pid}"]` : ':not([data-pid])';
+          const newInput = document.querySelector(`.add-input[data-view="${view}"]${pidSelector}`);
+          if (newInput) newInput.focus();
+        }, 0);
+      } 
+      else if (isSubtaskInput) {
+        const taskId = target.dataset.tid;
+        const view = target.dataset.view;
+        const t = state.tasks.find(t => t.id === taskId);
+        if (!t) return;
+        
+        const ids = [];
+        lines.forEach(val => {
+          const id = Date.now() + Math.random().toString(36).slice(2);
+          ids.push(id);
+          t.subtasks.push({
+            id,
+            title: val,
+            done: false
+          });
+        });
+        
+        target.value = '';
+        save(state);
+        renderAll();
+        showSubtaskInput(taskId, view);
+        
+        if (ids.length > 0) {
+          showMergeToast(ids.length, { type: 'subtask', ids, originalText, parentId: taskId, view });
+        }
+      }
+    });
+
     document.addEventListener('keydown', e => {
       const action = e.target.dataset.action;
 
@@ -4132,6 +4282,16 @@
     });
 
     document.getElementById('btn-settings').addEventListener('click', toggleSettings);
+    
+    document.getElementById('btn-clear-all').addEventListener('click', () => {
+      if (confirm('Clear all tasks, goals, and projects? Your settings will be preserved.')) {
+        state.tasks = [];
+        state.projects = [];
+        state.goals = [];
+        save(state);
+        renderAll();
+      }
+    });
 
     document.getElementById('settings-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'settings-overlay') {
