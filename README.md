@@ -188,6 +188,7 @@ Accessed via the ⚙️ icon. Controls:
 - **Zen Breath**: Toggle rhythmic UI breathing.
 - **Night Shift**: Dims inactive tasks late at night (10 PM - 5 AM).
 - **Hide Checked (For Today)**: When enabled, struck-through tasks are hidden from the "For Today" tab, keeping your active list clean and focused.
+- **Remember Active Tab**: Restores the last opened tab when restarting Daystack.
 - **Auto-Save**: Periodically syncs to your disk file (0 = Instant real-time saving).
 - **Focus Pings**: Periodic glow on active tasks, customizable/randomized browser notifications, and **Haptic Feedback** (Vibration) for mobile users. Includes a **Test Notification** preview button.
 - **Notification Customization**: Define a tailored notification message or toggle **Auto-Randomize Messages** to send fresh, randomized focus prompts.

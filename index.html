@@ -2164,6 +2164,16 @@
               <span class="slider"></span>
             </label>
           </div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <div class="settings-label">Remember Active Tab</div>
+              <div class="settings-desc">Restore the last opened tab when restarting Daystack.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-remember-tab">
+              <span class="slider"></span>
+            </label>
+          </div>
         </div>
 
         <div class="settings-section">
@@ -2509,7 +2519,9 @@
         cloudLastSync: '',
         gistIdToDelete: '',
         hideStruckToday: false,
-        multiSelect: true
+        multiSelect: true,
+        activeTab: 'today',
+        rememberTab: true
       };
 
       data.settings = { ...defaultSettings, ...(data.settings || {}) };
@@ -4175,6 +4187,8 @@
         e.preventDefault();
         const views = ['today', 'progress', 'done', 'recurring'];
         const targetView = views[parseInt(e.key) - 1];
+        state.settings.activeTab = targetView;
+        save(state);
         document.querySelectorAll('.tab').forEach(t => {
           t.classList.toggle('active', t.dataset.view === targetView);
         });
@@ -4196,10 +4210,13 @@
     // Tab switching
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        state.settings.activeTab = view;
+        save(state);
         document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.querySelectorAll('.column').forEach(c => c.classList.remove('active'));
-        document.getElementById('col-' + btn.dataset.view).classList.add('active');
+        document.getElementById('col-' + view).classList.add('active');
       });
     });
 
@@ -4241,6 +4258,7 @@
         document.getElementById('set-zen-breath').checked = state.settings.zenBreath;
         document.getElementById('set-night-shift').checked = state.settings.nightShift;
         document.getElementById('set-multi-select').checked = state.settings.multiSelect;
+        document.getElementById('set-remember-tab').checked = state.settings.rememberTab !== false;
         document.getElementById('set-auto-save').checked = state.settings.autoSave;
         document.getElementById('set-auto-save-freq').value = state.settings.autoSaveFreq;
         document.getElementById('set-goal-rotation-freq').value = state.settings.goalRotationFreq || 10;
@@ -4293,6 +4311,7 @@
         setBool('zenBreath', document.getElementById('set-zen-breath').checked);
         setBool('nightShift', document.getElementById('set-night-shift').checked);
         setBool('multiSelect', document.getElementById('set-multi-select').checked);
+        setBool('rememberTab', document.getElementById('set-remember-tab').checked);
         
         document.getElementById('btn-bulk-select').style.display = state.settings.multiSelect ? 'inline-block' : 'none';
         if (!state.settings.multiSelect && typeof bulkSelectMode !== 'undefined' && bulkSelectMode) {
@@ -4930,6 +4949,10 @@
         }
       } catch (e) { }
       // Settings restore (handled by load())
+      if (state.settings.rememberTab !== false && state.settings.activeTab) {
+        document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.view === state.settings.activeTab));
+        document.querySelectorAll('.column').forEach(c => c.classList.toggle('active', c.id === 'col-' + state.settings.activeTab));
+      }
       renderAll();
       checkOnboarding();
     })();
