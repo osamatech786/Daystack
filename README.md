@@ -40,6 +40,7 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - 🧘 **Zen Breath**: A beautiful, rhythmic water ripple background effect that pulses from the center, making the entire app feel alive and calm.
 - 🌙 **Dark Mode**: Sleek dark theme that persists across sessions.
 - 🌓 **Dynamic Theme**: Automatically switches between light and dark mode based on the time of day (Default).
+- 🎨 **Colour Palettes**: Four curated aesthetic themes (Warm, Ocean, Forest, Ember) with distinct ambient mesh gradients and accent colours.
 - ⚙️ **Settings Modal**: Redesigned premium glassmorphic panel with sticky navigation and enhanced aesthetics for effortless control.
 - ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
 - ☁️ **Smart Cloud Sync**: Dedicated `☁↑` (Push) and `☁↓` (Fetch) buttons in the header for total control. Performs an intelligent conflict check before every sync to prevent data loss. Now features a **Visual Conflict Diff Modal** to compare local vs. cloud tasks before deciding.
@@ -186,6 +187,7 @@ Daystack uses a silent "Heartbeat" (a 1-minute periodic check) to power its most
 ### Settings Modal
 Accessed via the ⚙️ icon. Controls:
 - **Zen Breath**: Toggle rhythmic UI breathing.
+- **Colour Palette**: Choose between 4 distinct aesthetic themes (Warm, Ocean, Forest, Ember) to customize your accent colours and ambient mesh background.
 - **Night Shift**: Dims inactive tasks late at night (10 PM - 5 AM).
 - **Hide Checked (For Today)**: When enabled, struck-through tasks are hidden from the "For Today" tab, keeping your active list clean and focused.
 - **Remember Active Tab**: Restores the last opened tab when restarting Daystack.
