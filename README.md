@@ -27,6 +27,11 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 ## Key Features
 
 - ✨ **Premium Design**: Modern, clean, glassmorphic UI with smooth micro-animations.
+- 📊 **Daily Progress Bar**: Track your focus completion at a glance with a smooth, dynamically updating progress bar.
+- ✅ **Subtask Completion Badges**: Clear badges (e.g. 1/3) that bloom vibrant green when all subtasks are finished.
+- 📋 **Markdown Export**: One-click copy of your entire day's habits and targets formatted as pristine Markdown text.
+- 🎵 **Zen Chimes**: Gentle, meditative audio feedback when completing tasks to keep you in the zone (toggleable).
+- ⌨️ **Shortcuts Modal**: Press `?` anywhere to instantly view a beautiful cheatsheet of all keyboard shortcuts.
 - 🎯 **Rotating Goal Stack**: Define multiple daily goals that automatically rotate like a slideshow to keep you inspired. Customize the rotation speed and edit goals easily with an expanding minimalist textarea.
 - 📋 **Multiline Paste Support**: Paste multiple lines of text to instantly create separate tasks or subtasks. Easily bundle them back into a single multiline task via the new Merge toast notification.
 - ☑️ **Multi-Select & Bulk Actions**: Select multiple tasks and subtasks at once to copy their text or delete them in bulk, complete with multi-item Undo support. Toggleable via the top navigation bar or Settings.
@@ -208,9 +213,11 @@ Accessed via the ⚙️ icon. Controls:
 
 ## ⌨️ Keyboard Shortcuts
 - `Ctrl + S`: Save instantly to disk.
-- `Ctrl + Z`: Undo last deleted task.
-- `Ctrl + Y` or `Ctrl + Shift + Z`: Redo last deleted task.
+- `Ctrl + Z`: Undo last deleted task, subtask, or bulk action.
 - `Alt + 1-4`: Switch tabs (Today, Progress, Done, Recurring).
+- `?` or `Shift + /`: Open Keyboard Shortcuts modal.
+- `/`: Focus search bar.
+- `N`: Focus new task input in active column.
 - `Enter`: Confirm task/subtask.
 - `Esc`: Cancel/Close inputs, or close Settings modal.
 

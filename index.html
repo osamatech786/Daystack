@@ -2280,6 +2280,94 @@
     [data-theme="dark"] .bulk-action-btn.danger:hover {
       background: rgba(239, 68, 68, 0.1);
     }
+
+    /* Daily Progress Bar */
+    .daily-progress-container {
+      margin: 8px 0 12px;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+    .daily-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .daily-progress-text {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .daily-progress-track {
+      width: 100%;
+      height: 6px;
+      background: var(--surface-2);
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .daily-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--pri-green));
+      border-radius: 99px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Subtask Badge */
+    .subtask-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      margin-left: 6px;
+      vertical-align: middle;
+      display: inline-block;
+      line-height: 1.4;
+      transition: all 0.2s ease;
+    }
+    .subtask-badge.all-done {
+      background: var(--pri-green);
+      color: var(--surface);
+      border-color: var(--pri-green);
+    }
+
+    /* Shortcuts Modal Grid */
+    .shortcuts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .shortcut-item kbd {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+    }
   </style>
 </head>
 
@@ -2304,8 +2392,18 @@
         <textarea id="goal-editor" class="goal-editor" placeholder="Type your goals here... (One per line)"></textarea>
       </div>
 
+      <div class="daily-progress-container" id="daily-progress-container">
+        <div class="daily-progress-header">
+          <span class="daily-progress-label">Today's Focus Progress</span>
+          <span class="daily-progress-text" id="daily-progress-text">0/0 Done (0%)</span>
+        </div>
+        <div class="daily-progress-track" id="daily-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="daily-progress-fill" id="daily-progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
       <div class="search-wrap">
-        <input type="text" class="search-input" id="search-tasks" placeholder="Search tasks, groups, or subtasks...">
+        <input type="text" class="search-input" id="search-tasks" placeholder="Search tasks, groups, or subtasks... (Press / to focus)">
         <div class="file-btns">
           <div id="cloud-sync-status" class="cloud-status" title="Smart Sync (Push with Conflict Check)">
             <span class="cloud-icon" id="cloud-icon">☁↑</span>
@@ -2319,6 +2417,8 @@
           </div>
           <button class="file-btn" id="btn-import">Load</button>
           <input type="file" id="file-import" accept=".json" style="display:none">
+          <button class="file-btn" id="btn-markdown" title="Copy Today's Summary as Markdown">📝</button>
+          <button class="file-btn" id="btn-shortcuts" title="Keyboard Shortcuts (?)">⌨</button>
           <button class="file-btn" id="btn-bulk-select" title="Multi-Select">☑</button>
           <button class="file-btn" id="btn-theme" title="Toggle theme">☀</button>
           <button class="file-btn" id="btn-settings" title="Open Settings">⚙</button>
@@ -2518,6 +2618,26 @@
           </div>
           <div class="settings-row">
             <div class="settings-info">
+              <div class="settings-label">Zen Chimes (Audio)</div>
+              <div class="settings-desc">Play gentle acoustic chimes upon completing tasks.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-sound-effects">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <div class="settings-label">Daily Progress Bar</div>
+              <div class="settings-desc">Display live completion progress for today's tasks.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-show-progress-bar">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info">
               <div class="settings-label">Remember Active Tab</div>
               <div class="settings-desc">Restore the last opened tab when restarting Daystack.</div>
             </div>
@@ -2710,6 +2830,31 @@
       </div>
     </div>
   </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcuts-overlay" class="modal-overlay">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2><span>⌨️ Keyboard Shortcuts</span></h2>
+      </div>
+      <div class="modal-body" style="padding: 16px 20px;">
+        <div class="shortcuts-grid">
+          <div class="shortcut-item"><span>Focus search input</span> <kbd>/</kbd></div>
+          <div class="shortcut-item"><span>Add new task in active tab</span> <kbd>N</kbd></div>
+          <div class="shortcut-item"><span>Save to file</span> <span><kbd>Ctrl</kbd> + <kbd>S</kbd></span></div>
+          <div class="shortcut-item"><span>Undo deleted task / subtask</span> <span><kbd>Ctrl</kbd> + <kbd>Z</kbd></span></div>
+          <div class="shortcut-item"><span>Redo last deleted task</span> <span><kbd>Ctrl</kbd> + <kbd>Y</kbd></span></div>
+          <div class="shortcut-item"><span>Switch tabs (Today..Recurring)</span> <span><kbd>Alt</kbd> + <kbd>1-4</kbd></span></div>
+          <div class="shortcut-item"><span>Toggle shortcuts cheatsheet</span> <kbd>?</kbd></div>
+          <div class="shortcut-item"><span>Close open modal / cancel</span> <kbd>Esc</kbd></div>
+          <div class="shortcut-item"><span>Confirm task or subtask</span> <kbd>Enter</kbd></div>
+          <div class="shortcut-item"><span>Rename task, subtask, or group</span> <kbd>Double-click</kbd></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-close" onclick="toggleShortcuts()">Close</button>
+      </div>
+    </div>
   </div>
 
   <!-- Undo Toast -->
@@ -2874,7 +3019,9 @@
         multiSelect: true,
         activeTab: 'today',
         rememberTab: true,
-        palette: 'warm'
+        palette: 'warm',
+        soundEffects: true,
+        showProgressBar: true
       };
 
       data.settings = { ...defaultSettings, ...(data.settings || {}) };
@@ -2889,6 +3036,173 @@
       }
 
       return performDailyReset(data);
+    }
+
+    let _audioUnlocked = false;
+    document.addEventListener('click', () => {
+      if (!_audioUnlocked) {
+        if (state.settings && state.settings.soundEffects === false) return;
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          if (!_audioCtx) _audioCtx = new AudioContextClass();
+          if (_audioCtx.state === 'suspended') _audioCtx.resume();
+        }
+        _audioUnlocked = true;
+      }
+    }, { once: true, capture: true });
+
+    let _lastChimeTime = { task: 0, subtask: 0 };
+    function playZenChime(type = 'task') {
+      if (state.settings && state.settings.soundEffects === false) return;
+      const nowMs = Date.now();
+      if (nowMs - (_lastChimeTime[type] || 0) < 50) return;
+      _lastChimeTime[type] = nowMs;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!_audioCtx) _audioCtx = new AudioContextClass();
+        if (_audioCtx.state === 'suspended') _audioCtx.resume();
+
+        const now = _audioCtx.currentTime;
+        const osc = _audioCtx.createOscillator();
+        const gain = _audioCtx.createGain();
+
+        osc.type = 'sine';
+        if (type === 'subtask') {
+          osc.frequency.setValueAtTime(659.25, now); // E5
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+        } else {
+          osc.frequency.setValueAtTime(528, now); // C5 / 528Hz Solfeggio
+          osc.frequency.exponentialRampToValueAtTime(1056, now + 0.3); // Octave up
+        }
+
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+
+        osc.connect(gain);
+        gain.connect(_audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.55);
+      } catch (e) {
+        console.warn('Zen Chime Audio unavailable:', e);
+      }
+    }
+
+    function updateProgressBar() {
+      const barContainer = document.getElementById('daily-progress-container');
+      if (!barContainer) return;
+      if (state.settings.showProgressBar === false) {
+        barContainer.style.display = 'none';
+        return;
+      }
+      barContainer.style.display = 'block';
+
+      const todayTasks = state.tasks.filter(t => t.source === 'daily' || t.source === 'oneoff');
+      const doneTasks = todayTasks.filter(t => t._done);
+      const total = todayTasks.length;
+      if (total === 0) {
+        barContainer.style.display = 'none';
+        return;
+      }
+      const done = doneTasks.length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      const fillEl = document.getElementById('daily-progress-fill');
+      const trackEl = document.getElementById('daily-progress-track');
+      const textEl = document.getElementById('daily-progress-text');
+      if (fillEl) fillEl.style.width = pct + '%';
+      if (trackEl) trackEl.setAttribute('aria-valuenow', pct);
+      if (textEl) {
+        textEl.textContent = total > 0 ? `${done}/${total} Done (${pct}%)` : '0/0 Done (0%)';
+      }
+    }
+
+    function toggleShortcuts() {
+      const overlay = document.getElementById('shortcuts-overlay');
+      if (overlay) overlay.classList.toggle('show');
+    }
+
+    function copyTodayAsMarkdown() {
+      const lines = [];
+      const dateStr = today();
+      lines.push(`# Daystack • ${dateStr}`);
+      lines.push('');
+
+      if (state.goals && state.goals.length > 0) {
+        lines.push('## Daily Goals');
+        state.goals.forEach(g => {
+          if (g && g.trim()) lines.push(`• ${esc(g.trim())}`);
+        });
+        lines.push('');
+      }
+
+      const habits = state.tasks.filter(t => t.source === 'daily');
+      if (habits.length > 0) {
+        lines.push('## Habits & Routines');
+        habits.forEach(t => {
+          const isComplete = t._done;
+          lines.push(`- [${isComplete ? 'x' : ' '}] ${esc(t.title)}`);
+          if (t.subtasks && t.subtasks.length > 0) {
+            t.subtasks.forEach(s => {
+              lines.push(`  - [${s.done ? 'x' : ' '}] ${esc(s.title)}`);
+            });
+          }
+        });
+        lines.push('');
+      }
+
+      const targets = state.tasks.filter(t => t.source === 'oneoff');
+      if (targets.length > 0) {
+        lines.push('## Daily Targets');
+        targets.forEach(t => {
+          const isComplete = t._done;
+          lines.push(`- [${isComplete ? 'x' : ' '}] ${esc(t.title)}`);
+          if (t.subtasks && t.subtasks.length > 0) {
+            t.subtasks.forEach(s => {
+              lines.push(`  - [${s.done ? 'x' : ' '}] ${esc(s.title)}`);
+            });
+          }
+        });
+        lines.push('');
+      }
+
+      const mdText = lines.join('\n');
+      if (habits.length === 0 && targets.length === 0 && (!state.goals || state.goals.length === 0)) {
+        alert('No tasks or goals to copy today.');
+        return;
+      }
+
+      const onSuccess = () => {
+        const btn = document.getElementById('btn-markdown');
+        if (btn) {
+          const oldText = btn.innerHTML;
+          btn.innerHTML = '✓ Copied';
+          setTimeout(() => { btn.innerHTML = oldText; }, 2000);
+        }
+      };
+
+      const fallbackCopy = () => {
+        const ta = document.createElement('textarea');
+        ta.value = mdText;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          onSuccess();
+        } catch (err) {
+          alert('Failed to copy markdown to clipboard. Please copy manually.');
+        }
+        document.body.removeChild(ta);
+      };
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(mdText).then(onSuccess).catch(fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
     }
 
     function performDailyReset(data) {
@@ -3515,6 +3829,12 @@
       const titleStruck = done || (task._struck && view === 'today');
       const showUndo = view === 'done';
 
+      const subtaskCount = task.subtasks ? task.subtasks.length : 0;
+      const subtaskDoneCount = task.subtasks ? task.subtasks.filter(s => s.done).length : 0;
+      const subtaskBadge = subtaskCount > 0 
+        ? `<span class="subtask-badge ${subtaskDoneCount === subtaskCount ? 'all-done' : ''}" title="${subtaskDoneCount} of ${subtaskCount} subtasks completed" aria-label="${subtaskDoneCount} of ${subtaskCount} subtasks completed">${subtaskDoneCount}/${subtaskCount}${subtaskDoneCount === subtaskCount ? ' ✓' : ''}</span>` 
+        : '';
+
       const subtasksHtml = task.subtasks.map(s => `
     <div class="subtask-row" data-subid="${s.id}">
       <input type="checkbox" class="bulk-chk" data-type="subtask" data-tid="${task.id}" data-sid="${s.id}">
@@ -3547,7 +3867,7 @@
               title="${task.source === 'daily' ? 'Recurring daily task (Click to make one-off)' : 'One-off task (Click to make recurring)'}">↻</span>
         <span class="task-title ${titleStruck ? 'struck' : ''}" 
               data-action="task-click" data-tid="${task.id}" data-view="${view}"
-              title="${view === 'today' ? 'Click to mark In Progress' : 'Click to mark Done'} (Double-click to edit)">${esc(task.title)}</span>
+              title="${view === 'today' ? 'Click to mark In Progress' : 'Click to mark Done'} (Double-click to edit)">${esc(task.title)}</span>${subtaskBadge}
         <button class="del-btn" data-action="delete" data-tid="${task.id}" title="Delete task permanently">×</button>
       </div>
       <div class="subtask-list">${subtasksHtml}</div>
@@ -3813,6 +4133,7 @@
       renderCol('done', t => t._done);
       renderCol('recurring', t => t.source === 'daily');
       updateTabs(state.tasks);
+      updateProgressBar();
       updateZenBreath();
       applyTheme();
       attachDragEvents();
@@ -3856,11 +4177,13 @@
       if (!t) return;
       t._done = true;
       t._struck = false;
+      playZenChime('task');
       save(state);
       renderAll();
     }
 
     let lastDeletedTask = null;
+    let lastDeletedSubtask = null;
     let lastRestoredTask = null;
     let _undoToastTimer = null;
 
@@ -3868,6 +4191,8 @@
       const t = state.tasks.find(t => t.id === taskId);
       if (!t) return;
       lastDeletedTask = JSON.parse(JSON.stringify(t));
+      lastDeletedSubtask = null;
+      if (typeof lastDeletedItemsBulk !== 'undefined') lastDeletedItemsBulk = [];
       lastRestoredTask = null; // new delete clears redo
       state.tasks = state.tasks.filter(t => t.id !== taskId);
       save(state);
@@ -3879,13 +4204,37 @@
       if (typeof lastDeletedItemsBulk === 'undefined' || lastDeletedItemsBulk.length === 0) return;
       lastDeletedItemsBulk.forEach(item => {
         if (item.type === 'task') {
-          state.tasks.push(item.task);
+          const exists = state.tasks.some(t => t.id === item.task.id);
+          if (!exists) state.tasks.push(item.task);
+        } else if (item.type === 'task_progress_state') {
+          const t = state.tasks.find(x => x.id === item.id);
+          if (t) t._struck = item.prevStruck;
         } else if (item.type === 'subtask') {
           const t = state.tasks.find(x => x.id === item.tid);
-          if (t) t.subtasks.push(item.subtask);
+          if (t) {
+            const exists = t.subtasks.some(s => s.id === item.subtask.id);
+            if (!exists) t.subtasks.push(item.subtask);
+          }
         }
       });
       lastDeletedItemsBulk = [];
+      lastDeletedTask = null;
+      lastDeletedSubtask = null;
+      save(state);
+      renderAll();
+      hideUndoToast();
+    }
+
+    function restoreDeletedSubtask() {
+      if (!lastDeletedSubtask) return;
+      const t = state.tasks.find(x => x.id === lastDeletedSubtask.taskId);
+      if (t) {
+        const clampIndex = Math.min(lastDeletedSubtask.index, t.subtasks.length);
+        t.subtasks.splice(clampIndex, 0, lastDeletedSubtask.subtask);
+      }
+      lastDeletedSubtask = null;
+      lastDeletedTask = null;
+      if (typeof lastDeletedItemsBulk !== 'undefined') lastDeletedItemsBulk = [];
       save(state);
       renderAll();
       hideUndoToast();
@@ -3898,6 +4247,8 @@
       btn.textContent = mode === 'redo' ? '↺ Redo' : '↩ Undo';
       if (mode === 'bulk-undo') {
         btn.onclick = restoreBulkDeleted;
+      } else if (mode === 'subtask-undo') {
+        btn.onclick = restoreDeletedSubtask;
       } else {
         btn.onclick = mode === 'redo' ? redoDelete : restoreLastDeleted;
       }
@@ -3915,6 +4266,8 @@
       lastRestoredTask = lastDeletedTask;
       state.tasks.push(lastDeletedTask);
       lastDeletedTask = null;
+      lastDeletedSubtask = null;
+      if (typeof lastDeletedItemsBulk !== 'undefined') lastDeletedItemsBulk = [];
       save(state);
       renderAll();
       showUndoToast('Task restored', 'redo');
@@ -4013,6 +4366,9 @@
       if (t.subtasks.length > 0 && t.subtasks.every(s => s.done)) {
         t._done = true;
         t._struck = false;
+        playZenChime('task');
+      } else if (s.done) {
+        playZenChime('subtask');
       }
       save(state);
       renderAll();
@@ -4083,9 +4439,17 @@
     function deleteSubtask(taskId, subId) {
       const t = state.tasks.find(t => t.id === taskId);
       if (!t) return;
-      t.subtasks = t.subtasks.filter(s => s.id !== subId);
+      const idx = t.subtasks.findIndex(s => s.id === subId);
+      if (idx === -1) return;
+      const deletedSub = JSON.parse(JSON.stringify(t.subtasks[idx]));
+      lastDeletedSubtask = { taskId, subtask: deletedSub, index: idx };
+      lastDeletedTask = null;
+      lastRestoredTask = null;
+      if (typeof lastDeletedItemsBulk !== 'undefined') lastDeletedItemsBulk = [];
+      t.subtasks.splice(idx, 1);
       save(state);
       renderAll();
+      showUndoToast('Subtask deleted', 'subtask-undo');
     }
 
     let activeSubtaskInput = null;
@@ -4145,19 +4509,52 @@
     }
 
     function clearTab(view) {
+      const viewLabel = view === 'today' ? 'For Today' : view === 'progress' ? 'In Progress' : view === 'recurring' ? 'Recurring' : 'Done';
+      
+      let countToClear = 0;
+      if (view === 'today') countToClear = state.tasks.filter(t => !t._done).length;
+      else if (view === 'progress') countToClear = state.tasks.filter(isInProgress).length;
+      else if (view === 'recurring') countToClear = state.tasks.filter(t => t.source === 'daily').length;
+      else countToClear = state.tasks.filter(t => t._done).length;
+
+      if (countToClear === 0) return;
+
+      if (!confirm(`Are you sure you want to clear ${countToClear} tasks in ${viewLabel}?`)) {
+        return;
+      }
+
+      lastDeletedItemsBulk = [];
+      lastDeletedTask = null;
+      lastDeletedSubtask = null;
+
       if (view === 'today') {
+        state.tasks.forEach(t => {
+          if (!t._done) lastDeletedItemsBulk.push({ type: 'task', task: JSON.parse(JSON.stringify(t)) });
+        });
         state.tasks = state.tasks.filter(t => t._done); // Clears all not-done
       } else if (view === 'progress') {
         state.tasks.forEach(t => {
-          if (isInProgress(t)) { t._struck = false; }
+          if (isInProgress(t)) {
+            lastDeletedItemsBulk.push({ type: 'task_progress_state', id: t.id, prevStruck: t._struck });
+            t._struck = false;
+          }
         });
       } else if (view === 'recurring') {
+        state.tasks.forEach(t => {
+          if (t.source === 'daily') lastDeletedItemsBulk.push({ type: 'task', task: JSON.parse(JSON.stringify(t)) });
+        });
         state.tasks = state.tasks.filter(t => t.source !== 'daily');
       } else {
+        state.tasks.forEach(t => {
+          if (t._done) lastDeletedItemsBulk.push({ type: 'task', task: JSON.parse(JSON.stringify(t)) });
+        });
         state.tasks = state.tasks.filter(t => !t._done);
       }
       save(state);
       renderAll();
+      const deletedCount = lastDeletedItemsBulk.filter(i => i.type !== 'task_progress_state').length;
+      const msg = deletedCount > 0 ? `Cleared ${deletedCount} items` : `Reset ${lastDeletedItemsBulk.length} items to In Progress`;
+      showUndoToast(msg, 'bulk-undo');
     }
 
     // ── Event delegation ───────────────────────────────────────
@@ -4511,32 +4908,67 @@
         }
       }
 
+      const tag = (e.target.tagName || '').toLowerCase();
+      const isInputFocused = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
+
+      // ? for Keyboard Shortcuts modal
+      if ((e.key === '?' || (e.code === 'Slash' && e.shiftKey)) && !isInputFocused) {
+        e.preventDefault();
+        toggleShortcuts();
+      }
+
+      // / to focus search
+      if (e.key === '/' && !isInputFocused) {
+        e.preventDefault();
+        const searchEl = document.getElementById('search-tasks');
+        if (searchEl) {
+          searchEl.focus();
+          searchEl.select();
+        }
+      }
+
+      // N or n to focus new task input in active column
+      if ((e.key === 'n' || e.key === 'N') && !isInputFocused && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const activeColInput = document.querySelector('.column.active .add-input');
+        if (activeColInput) {
+          e.preventDefault();
+          activeColInput.focus();
+          activeColInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
       // Ctrl + S for Save
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
         saveToFile();
       }
 
-      // Ctrl + Z to undo last deleted task (ignore while typing in fields)
+      // Ctrl + Z to undo last deleted task / subtask / bulk (ignore while typing in fields)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
-        const tag = (e.target.tagName || '').toLowerCase();
-        if (tag !== 'input' && tag !== 'textarea' && !e.target.isContentEditable && lastDeletedTask) {
-          e.preventDefault();
-          restoreLastDeleted();
+        if (!isInputFocused) {
+          if (lastDeletedSubtask) {
+            e.preventDefault();
+            restoreDeletedSubtask();
+          } else if (lastDeletedTask) {
+            e.preventDefault();
+            restoreLastDeleted();
+          } else if (typeof lastDeletedItemsBulk !== 'undefined' && lastDeletedItemsBulk.length > 0) {
+            e.preventDefault();
+            restoreBulkDeleted();
+          }
         }
       }
 
       // Ctrl + Y or Ctrl + Shift + Z to redo (re-delete restored task)
       if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) {
-        const tag = (e.target.tagName || '').toLowerCase();
-        if (tag !== 'input' && tag !== 'textarea' && !e.target.isContentEditable && lastRestoredTask) {
+        if (!isInputFocused && lastRestoredTask) {
           e.preventDefault();
           redoDelete();
         }
       }
 
       // Alt + 1/2/3/4 for tab switching
-      if (e.altKey && e.key >= '1' && e.key <= '4') {
+      if (e.altKey && ['1', '2', '3', '4'].includes(e.key)) {
         e.preventDefault();
         const views = ['today', 'progress', 'done', 'recurring'];
         const targetView = views[parseInt(e.key) - 1];
@@ -4551,11 +4983,15 @@
         renderAll();
       }
 
-      // Escape to close settings
+      // Escape to close settings or shortcuts
       if (e.key === 'Escape') {
         const overlay = document.getElementById('settings-overlay');
         if (overlay && overlay.classList.contains('show')) {
           toggleSettings();
+        }
+        const shortcutsOverlay = document.getElementById('shortcuts-overlay');
+        if (shortcutsOverlay && shortcutsOverlay.classList.contains('show')) {
+          toggleShortcuts();
         }
       }
     });
@@ -4635,6 +5071,8 @@
         // Sync palette swatch active state
         applyPalette();
         document.getElementById('set-night-shift').checked = state.settings.nightShift;
+        document.getElementById('set-sound-effects').checked = state.settings.soundEffects !== false;
+        document.getElementById('set-show-progress-bar').checked = state.settings.showProgressBar !== false;
         document.getElementById('set-multi-select').checked = state.settings.multiSelect;
         document.getElementById('set-remember-tab').checked = state.settings.rememberTab !== false;
         document.getElementById('set-auto-save').checked = state.settings.autoSave;
@@ -4688,6 +5126,8 @@
 
         setBool('zenBreath', document.getElementById('set-zen-breath').checked);
         setBool('nightShift', document.getElementById('set-night-shift').checked);
+        setBool('soundEffects', document.getElementById('set-sound-effects').checked);
+        setBool('showProgressBar', document.getElementById('set-show-progress-bar').checked);
         setBool('multiSelect', document.getElementById('set-multi-select').checked);
         setBool('rememberTab', document.getElementById('set-remember-tab').checked);
         
@@ -4764,6 +5204,14 @@
     // Toggle cloud fields visibility
     document.getElementById('set-cloud-sync').addEventListener('change', (e) => {
       document.getElementById('cloud-settings-fields').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    document.getElementById('btn-shortcuts').addEventListener('click', toggleShortcuts);
+    document.getElementById('btn-markdown').addEventListener('click', copyTodayAsMarkdown);
+    document.getElementById('shortcuts-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'shortcuts-overlay') {
+        toggleShortcuts();
+      }
     });
 
     document.getElementById('btn-cloud-sync').addEventListener('click', () => handleCloudSync());
