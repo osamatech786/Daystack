@@ -1,0 +1,17 @@
+{
+  "name": "Daystack",
+  "short_name": "Daystack",
+  "description": "Radical Minimalist Focus Tracker",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

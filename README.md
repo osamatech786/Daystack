@@ -50,12 +50,14 @@ A minimal, single-page tracker for both daily habits and one-off tasks.
 - ✏️ **Inline Editing**: Double-click any task, subtask, or group to rename it in-place.
 - ☁️ **Smart Cloud Sync**: Dedicated `☁↑` (Push) and `☁↓` (Fetch) buttons in the header for total control. Performs an intelligent conflict check before every sync to prevent data loss. Now features a **Visual Conflict Diff Modal** to compare local vs. cloud tasks before deciding.
 - 🚀 **Blazing Fast**: Single-page architecture with zero external dependencies.
-- 📱 **Hyper-Compact UI**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars. Features an adaptive mobile layout that intelligently prioritizes space for controls on small screens.
+- 📱 **Hyper-Compact UI & Bottom Navigation**: Utilities (Save/Load) and the Reset Timer are integrated into the search and group bars. On mobile screens, the main tab bar dynamically snaps to the bottom of the screen for effortless thumb reach.
 - ↕️ **Master Toggle**: Expand or collapse all groups in a tab with a single click.
 - 🧘 **Group Hierarchy**: Distinct, tinted group headers with clear visual separation for better structure.
 - 💓 **The Heartbeat**: A silent 1-minute engine that powers all real-time logic (Reset, Auto-Save, Zen Breath, and Focus Pings).
 - ✨ **Interactive Onboarding**: New users are guided by a premium, glassmorphic tour that highlights core features and helps create the first task.
-- 📱 **Touch Gestures**: Full mobile support for renaming via **Double-Tap** or **Long-Press** on any task or group.
+- 📱 **Native Swipe Gestures**: Fluid touch gestures for mobile users. Swipe a task to the right (→) to instantly mark it complete, or swipe to the left (←) to delete it with undo protection.
+- ⬇️ **True PWA Installability**: Install Daystack as a native app on iOS and Android. Features a flawless vector icon (`icon.svg`), a dedicated `manifest.json`, and a custom "Install App" button inside Settings (Android).
+- 📶 **100% Offline Resilience**: Powered by a robust Service Worker (`sw.js`) utilizing the Cache API. Even in Airplane Mode, Daystack loads instantly and completely bypasses the network.
 - 🔔 **Single-File Notifications**: Seamless browser notifications on Desktop and Phone using the Standard Notification API.
 - 🗂️ **Collapsible Today Sections**: The "For Today" tab is split into two collapsible blocks — **Habits & Routines** (recurring tasks) and **Daily Targets** (one-off tasks) — so you can focus on one area at a time and reduce visual overwhelm.
 - 👁️ **Hide Checked Tasks**: A Settings toggle lets you instantly hide all struck-through tasks from the "For Today" view, keeping your list clean and clutter-free.
