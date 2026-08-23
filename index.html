@@ -938,6 +938,7 @@
     }
 
     .subtask-title {
+      flex: 1;
       font-size: 13px;
       white-space: pre-wrap;
     }
@@ -2417,7 +2418,7 @@
           </div>
           <button class="file-btn" id="btn-import">Load</button>
           <input type="file" id="file-import" accept=".json" style="display:none">
-          <button class="file-btn" id="btn-markdown" title="Copy Today's Summary as Markdown">📝</button>
+          <button class="file-btn" id="btn-markdown" title="Copy Today's Summary as Markdown">Copy Today</button>
           <button class="file-btn" id="btn-shortcuts" title="Keyboard Shortcuts (?)">⌨</button>
           <button class="file-btn" id="btn-bulk-select" title="Multi-Select">☑</button>
           <button class="file-btn" id="btn-theme" title="Toggle theme">☀</button>
@@ -3098,7 +3099,8 @@
       }
       barContainer.style.display = 'block';
 
-      const todayTasks = state.tasks.filter(t => t.source === 'daily' || t.source === 'oneoff');
+      let todayTasks = state.tasks.filter(t => t.source === 'daily' || t.source === 'oneoff');
+      todayTasks = applyFilters(todayTasks, 'today');
       const doneTasks = todayTasks.filter(t => t._done);
       const total = todayTasks.length;
       if (total === 0) {
@@ -3124,22 +3126,45 @@
     }
 
     function copyTodayAsMarkdown() {
+      const view = document.querySelector('.column.active').id.replace('col-', '');
+      
+      let baseTasks;
+      if (view === 'today') {
+        baseTasks = state.tasks.filter(t => (t.source === 'daily' || t.source === 'oneoff') && !t._done);
+      } else if (view === 'progress') {
+        baseTasks = state.tasks.filter(t => t._struck && !t._done);
+      } else if (view === 'done') {
+        baseTasks = state.tasks.filter(t => t._done);
+      } else if (view === 'recurring') {
+        baseTasks = state.tasks.filter(t => t.source === 'daily');
+      }
+
+      const visibleTasks = applyFilters(baseTasks, view);
+
       const lines = [];
       const dateStr = today();
-      lines.push(`# Daystack • ${dateStr}`);
-      lines.push('');
-
-      if (state.goals && state.goals.length > 0) {
-        lines.push('## Daily Goals');
-        state.goals.forEach(g => {
-          if (g && g.trim()) lines.push(`• ${esc(g.trim())}`);
-        });
+      
+      if (view === 'today') {
+        lines.push(`# Daystack • ${dateStr}`);
+        lines.push('');
+        if (state.goals && state.goals.length > 0) {
+          lines.push('## Daily Goals');
+          state.goals.forEach(g => {
+            if (g && g.trim()) lines.push(`• ${esc(g.trim())}`);
+          });
+          lines.push('');
+        }
+      } else {
+        const viewLabel = view === 'progress' ? 'In Progress' : view === 'done' ? 'Done' : 'Recurring';
+        lines.push(`# ${viewLabel} • ${dateStr}`);
         lines.push('');
       }
 
-      const habits = state.tasks.filter(t => t.source === 'daily');
+      const habits = visibleTasks.filter(t => t.source === 'daily');
+      const targets = visibleTasks.filter(t => t.source === 'oneoff');
+
       if (habits.length > 0) {
-        lines.push('## Habits & Routines');
+        lines.push(view === 'today' ? '## Habits & Routines' : '## Recurring Tasks');
         habits.forEach(t => {
           const isComplete = t._done;
           lines.push(`- [${isComplete ? 'x' : ' '}] ${esc(t.title)}`);
@@ -3152,9 +3177,8 @@
         lines.push('');
       }
 
-      const targets = state.tasks.filter(t => t.source === 'oneoff');
       if (targets.length > 0) {
-        lines.push('## Daily Targets');
+        lines.push(view === 'today' ? '## Daily Targets' : '## One-off Tasks');
         targets.forEach(t => {
           const isComplete = t._done;
           lines.push(`- [${isComplete ? 'x' : ' '}] ${esc(t.title)}`);
@@ -3168,8 +3192,8 @@
       }
 
       const mdText = lines.join('\n');
-      if (habits.length === 0 && targets.length === 0 && (!state.goals || state.goals.length === 0)) {
-        alert('No tasks or goals to copy today.');
+      if (habits.length === 0 && targets.length === 0 && (view !== 'today' || !state.goals || state.goals.length === 0)) {
+        alert('No visible tasks to copy.');
         return;
       }
 
@@ -3839,7 +3863,7 @@
     <div class="subtask-row" data-subid="${s.id}">
       <input type="checkbox" class="bulk-chk" data-type="subtask" data-tid="${task.id}" data-sid="${s.id}">
       <span class="chk ${s.done ? 'checked' : ''}" data-action="toggle-sub" data-tid="${task.id}" data-sid="${s.id}">${s.done ? '●' : '○'}</span>
-      <span class="subtask-title ${s.done ? 'struck' : ''}">${esc(s.title)}</span>
+      <span class="subtask-title ${s.done ? 'struck' : ''}" data-action="toggle-sub" data-tid="${task.id}" data-sid="${s.id}" style="cursor:pointer;">${esc(s.title)}</span>
       <button class="sub-del-btn" data-action="delete-sub" data-tid="${task.id}" data-sid="${s.id}" title="Delete subtask">×</button>
     </div>
   `).join('');
@@ -4413,7 +4437,8 @@
 
       // Attempt to re-focus the specific group input after re-render
       setTimeout(() => {
-        const newInput = document.querySelector(`.add-input[data-view="${view}"][data-pid="${pid}"]`);
+        const sourceSelector = source ? `[data-source="${source}"]` : '';
+        const newInput = document.querySelector(`.add-input[data-view="${view}"][data-pid="${pid}"]${sourceSelector}`);
         if (newInput) newInput.focus();
       }, 0);
     }
@@ -4646,7 +4671,13 @@
       else if (action === 'toggle-sub') {
         const tid = actionEl.dataset.tid;
         const sid = actionEl.dataset.sid;
-        toggleSubtask(tid, sid);
+        if (e.detail === 1) {
+          window._taskClickTimer = setTimeout(() => {
+            toggleSubtask(tid, sid);
+          }, 250);
+        } else if (e.detail === 2) {
+          clearTimeout(window._taskClickTimer);
+        }
       }
 
       else if (action === 'delete') {
