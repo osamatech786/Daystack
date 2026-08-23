@@ -2385,10 +2385,10 @@
     <div id="app">
       <div class="header-row">
         <div class="tab-bar">
-          <button class="tab active" data-view="today">For Today <span class="badge" id="badge-today"></span></button>
-          <button class="tab" data-view="progress">In Progress <span class="badge" id="badge-progress"></span></button>
-          <button class="tab" data-view="done">Done <span class="badge" id="badge-done"></span></button>
-          <button class="tab" data-view="recurring">Recurring <span class="badge" id="badge-recurring"></span></button>
+          <button class="tab active" data-view="today" title="Switch to For Today view">For Today <span class="badge" id="badge-today"></span></button>
+          <button class="tab" data-view="progress" title="Switch to In Progress view">In Progress <span class="badge" id="badge-progress"></span></button>
+          <button class="tab" data-view="done" title="Switch to Done view">Done <span class="badge" id="badge-done"></span></button>
+          <button class="tab" data-view="recurring" title="Switch to Recurring view">Recurring <span class="badge" id="badge-recurring"></span></button>
         </div>
       </div>
 
@@ -2417,10 +2417,10 @@
           <button class="file-btn" id="btn-header-fetch" title="Fetch / Restore from Cloud"
             style="display: none;">☁↓</button>
           <div class="btn-wrap">
-            <button class="file-btn" id="btn-export">Save</button>
+            <button class="file-btn" id="btn-export" title="Export your tasks to a JSON backup file">Save</button>
             <div class="dirty-dot" id="save-dirty"></div>
           </div>
-          <button class="file-btn" id="btn-import">Load</button>
+          <button class="file-btn" id="btn-import" title="Import tasks from a JSON backup file">Load</button>
           <input type="file" id="file-import" accept=".json" style="display:none">
           <button class="file-btn" id="btn-markdown" title="Copy Today's Summary as Markdown">Copy Today</button>
           <button class="file-btn" id="btn-shortcuts" title="Keyboard Shortcuts (?)">⌨</button>
@@ -2438,23 +2438,23 @@
         <div class="filter-bar">
           <div class="filter-group">
             <span class="filter-label">Pri:</span>
-            <button class="filt-btn active" data-col="today" data-filt-pri="all">All</button>
-            <button class="filt-btn" data-col="today" data-filt-pri="red"><span
+            <button class="filt-btn active" data-col="today" data-filt-pri="all" title="Filter tasks by All priority">All</button>
+            <button class="filt-btn" data-col="today" data-filt-pri="red" title="Filter tasks by Red priority"><span
                 class="filt-dot pri-red"></span></button>
-            <button class="filt-btn" data-col="today" data-filt-pri="yellow"><span
+            <button class="filt-btn" data-col="today" data-filt-pri="yellow" title="Filter tasks by Yellow priority"><span
                 class="filt-dot pri-yellow"></span></button>
-            <button class="filt-btn" data-col="today" data-filt-pri="blue"><span
+            <button class="filt-btn" data-col="today" data-filt-pri="blue" title="Filter tasks by Blue priority"><span
                 class="filt-dot pri-blue"></span></button>
-            <button class="filt-btn" data-col="today" data-filt-pri="none"><span
+            <button class="filt-btn" data-col="today" data-filt-pri="none" title="Filter tasks by None priority"><span
                 class="filt-dot pri-none"></span></button>
           </div>
           <div class="filter-group">
             <span class="filter-label">Status:</span>
-            <button class="filt-btn active" data-col="today" data-filt-status="all">All</button>
-            <button class="filt-btn" data-col="today" data-filt-status="struck">In Progress</button>
-            <button class="filt-btn" data-col="today" data-filt-status="not-struck">Not Started</button>
+            <button class="filt-btn active" data-col="today" data-filt-status="all" title="Filter by status: All">All</button>
+            <button class="filt-btn" data-col="today" data-filt-status="struck" title="Filter by status: In Progress">In Progress</button>
+            <button class="filt-btn" data-col="today" data-filt-status="not-struck" title="Filter by status: Not Started">Not Started</button>
           </div>
-          <button class="sort-btn" data-col="today">Sort: Priority</button>
+          <button class="sort-btn" data-col="today" title="Toggle sorting by Priority or Status">Sort: Priority</button>
         </div>
         <div class="col-content" id="content-today"></div>
       </div>
@@ -2462,17 +2462,17 @@
         <div class="filter-bar">
           <div class="filter-group">
             <span class="filter-label">Pri:</span>
-            <button class="filt-btn active" data-col="progress" data-filt-pri="all">All</button>
-            <button class="filt-btn" data-col="progress" data-filt-pri="red"><span
+            <button class="filt-btn active" data-col="progress" data-filt-pri="all" title="Filter tasks by All priority">All</button>
+            <button class="filt-btn" data-col="progress" data-filt-pri="red" title="Filter tasks by Red priority"><span
                 class="filt-dot pri-red"></span></button>
-            <button class="filt-btn" data-col="progress" data-filt-pri="yellow"><span
+            <button class="filt-btn" data-col="progress" data-filt-pri="yellow" title="Filter tasks by Yellow priority"><span
                 class="filt-dot pri-yellow"></span></button>
-            <button class="filt-btn" data-col="progress" data-filt-pri="blue"><span
+            <button class="filt-btn" data-col="progress" data-filt-pri="blue" title="Filter tasks by Blue priority"><span
                 class="filt-dot pri-blue"></span></button>
-            <button class="filt-btn" data-col="progress" data-filt-pri="none"><span
+            <button class="filt-btn" data-col="progress" data-filt-pri="none" title="Filter tasks by None priority"><span
                 class="filt-dot pri-none"></span></button>
           </div>
-          <button class="sort-btn" data-col="progress">Sort: Priority</button>
+          <button class="sort-btn" data-col="progress" title="Toggle sorting by Priority or Status">Sort: Priority</button>
         </div>
         <div class="col-content" id="content-progress"></div>
       </div>
@@ -2480,16 +2480,16 @@
         <div class="filter-bar">
           <div class="filter-group">
             <span class="filter-label">Pri:</span>
-            <button class="filt-btn active" data-col="done" data-filt-pri="all">All</button>
-            <button class="filt-btn" data-col="done" data-filt-pri="red"><span class="filt-dot pri-red"></span></button>
-            <button class="filt-btn" data-col="done" data-filt-pri="yellow"><span
+            <button class="filt-btn active" data-col="done" data-filt-pri="all" title="Filter tasks by All priority">All</button>
+            <button class="filt-btn" data-col="done" data-filt-pri="red" title="Filter tasks by Red priority"><span class="filt-dot pri-red"></span></button>
+            <button class="filt-btn" data-col="done" data-filt-pri="yellow" title="Filter tasks by Yellow priority"><span
                 class="filt-dot pri-yellow"></span></button>
-            <button class="filt-btn" data-col="done" data-filt-pri="blue"><span
+            <button class="filt-btn" data-col="done" data-filt-pri="blue" title="Filter tasks by Blue priority"><span
                 class="filt-dot pri-blue"></span></button>
-            <button class="filt-btn" data-col="done" data-filt-pri="none"><span
+            <button class="filt-btn" data-col="done" data-filt-pri="none" title="Filter tasks by None priority"><span
                 class="filt-dot pri-none"></span></button>
           </div>
-          <button class="sort-btn" data-col="done">Sort: Priority</button>
+          <button class="sort-btn" data-col="done" title="Toggle sorting by Priority or Status">Sort: Priority</button>
         </div>
         <div class="col-content" id="content-done"></div>
       </div>
@@ -2497,17 +2497,17 @@
         <div class="filter-bar">
           <div class="filter-group">
             <span class="filter-label">Pri:</span>
-            <button class="filt-btn active" data-col="recurring" data-filt-pri="all">All</button>
-            <button class="filt-btn" data-col="recurring" data-filt-pri="red"><span
+            <button class="filt-btn active" data-col="recurring" data-filt-pri="all" title="Filter tasks by All priority">All</button>
+            <button class="filt-btn" data-col="recurring" data-filt-pri="red" title="Filter tasks by Red priority"><span
                 class="filt-dot pri-red"></span></button>
-            <button class="filt-btn" data-col="recurring" data-filt-pri="yellow"><span
+            <button class="filt-btn" data-col="recurring" data-filt-pri="yellow" title="Filter tasks by Yellow priority"><span
                 class="filt-dot pri-yellow"></span></button>
-            <button class="filt-btn" data-col="recurring" data-filt-pri="blue"><span
+            <button class="filt-btn" data-col="recurring" data-filt-pri="blue" title="Filter tasks by Blue priority"><span
                 class="filt-dot pri-blue"></span></button>
-            <button class="filt-btn" data-col="recurring" data-filt-pri="none"><span
+            <button class="filt-btn" data-col="recurring" data-filt-pri="none" title="Filter tasks by None priority"><span
                 class="filt-dot pri-none"></span></button>
           </div>
-          <button class="sort-btn" data-col="recurring">Sort: Priority</button>
+          <button class="sort-btn" data-col="recurring" title="Toggle sorting by Priority or Status">Sort: Priority</button>
         </div>
         <div class="col-content" id="content-recurring"></div>
       </div>
@@ -2708,7 +2708,7 @@
               using an insecure connection (likely a local file).
             </div>
           </div>
-          <button class="settings-btn" onclick="triggerFocusPing(true)" style="margin-top: 8px; width: 100%;">Test
+          <button class="settings-btn" onclick="triggerFocusPing(true)" style="margin-top: 8px; width: 100%;" title="Play a test notification sound">Test
             Notification</button>
         </div>
 
@@ -2738,7 +2738,7 @@
               <div class="settings-label">Install App</div>
               <div class="settings-desc">Install Daystack on your device for a native offline experience.</div>
             </div>
-            <button class="settings-btn" id="btn-install-pwa" style="background: var(--text); color: var(--bg); border: none;">Install</button>
+            <button class="settings-btn" id="btn-install-pwa" style="background: var(--text); color: var(--bg); border: none;" title="Install Daystack as a standalone app">Install</button>
           </div>
         </div>
 
@@ -2831,17 +2831,17 @@
               </label>
             </div>
             <div class="settings-btn-group">
-              <button class="settings-btn" id="btn-cloud-restore">☁↓ Restore from Cloud</button>
+              <button class="settings-btn" id="btn-cloud-restore" title="Overwrite local data with the version from GitHub">☁↓ Restore from Cloud</button>
               <button class="settings-btn" id="btn-cloud-reset-gist"
                 title="Deletes current Gist and creates a fresh one to clear history">Reset Gist</button>
-              <button class="settings-btn pri" id="btn-cloud-sync">☁↑ Sync Now</button>
+              <button class="settings-btn pri" id="btn-cloud-sync" title="Force push local data to GitHub">☁↑ Sync Now</button>
             </div>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="modal-close" onclick="toggleSettings()">Close & Apply</button>
+        <button class="modal-close" onclick="toggleSettings()" title="Close modal and apply settings">Close & Apply</button>
       </div>
     </div>
   </div>
@@ -2867,7 +2867,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="modal-close" onclick="toggleShortcuts()">Close</button>
+        <button class="modal-close" onclick="toggleShortcuts()" title="Close modal">Close</button>
       </div>
     </div>
   </div>
@@ -2897,19 +2897,19 @@
       </div>
       <div class="modal-footer">
         <div class="diff-actions">
-          <button class="settings-btn" id="btn-diff-pull">⬇ Pull from Cloud</button>
-          <button class="settings-btn pri" id="btn-diff-push">⬆ Overwrite Cloud</button>
+          <button class="settings-btn" id="btn-diff-pull" title="Accept Cloud version">⬇ Pull from Cloud</button>
+          <button class="settings-btn pri" id="btn-diff-push" title="Keep Local version">⬆ Overwrite Cloud</button>
         </div>
-        <button class="settings-btn" id="btn-diff-cancel" style="width:100%;margin-top:10px;">Cancel</button>
+        <button class="settings-btn" id="btn-diff-cancel" style="width:100%;margin-top:10px;" title="Cancel sync action">Cancel</button>
       </div>
     </div>
   </div>
 
   <div class="bulk-action-bar" id="bulk-action-bar">
-    <button class="bulk-action-btn" id="btn-bulk-copy">Copy Text</button>
+    <button class="bulk-action-btn" id="btn-bulk-copy" title="Copy selected tasks to clipboard">Copy Text</button>
 
-    <button class="bulk-action-btn danger" id="btn-bulk-delete">Delete</button>
-    <button class="bulk-action-btn" id="btn-bulk-cancel">Cancel</button>
+    <button class="bulk-action-btn danger" id="btn-bulk-delete" title="Permanently delete selected tasks">Delete</button>
+    <button class="bulk-action-btn" id="btn-bulk-cancel" title="Cancel multi-select mode">Cancel</button>
   </div>
 
   <script>
