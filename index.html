@@ -2515,6 +2515,10 @@
       <footer>
         <div class="footer-text">Built with 🤍 for better days</div>
         <div class="footer-links">
+          <a href="#" class="footer-link" onclick="document.getElementById('philosophy-overlay').classList.add('show'); event.preventDefault();" title="Philosophy">
+            <svg viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm1 18h-2v-6h2v6zm-1-9.75c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
+            Philosophy
+          </a>
           <a href="https://github.com/osamatech786/daystack" target="_blank" class="footer-link" title="GitHub">
             <svg viewBox="0 0 24 24">
               <path
@@ -2535,11 +2539,64 @@
   </div>
 
   <div id="onboard-overlay" class="onboard-overlay">
-    <div class="onboard-card" id="onboard-card">
-      <div style="font-size: 40px; margin-bottom: 16px;">✨</div>
-      <h2>Welcome to Daystack</h2>
-      <p>Your journey to radical focus starts here. Let's set up your first task together.</p>
-      <button class="onboard-btn" onclick="startTour()">Get Started</button>
+    <div class="onboard-card" id="onboard-card" style="max-width: 500px; text-align: left;">
+      <div style="font-size: 40px; margin-bottom: 16px; text-align: center;">✨</div>
+      <h2 style="text-align: center;">Welcome to Daystack</h2>
+      <p style="font-size: 15px; margin-bottom: 16px; line-height: 1.6;">
+        Daystack is a <b>radical minimalist focus tracker</b> designed to clear your mental clutter.
+        It runs entirely on your device (offline-first) so your data stays 100% private.
+      </p>
+      <p style="font-size: 15px; margin-bottom: 16px; line-height: 1.6;">
+        Psychologically, our brains struggle to separate repetitive habits from unique daily goals. 
+        Unlike traditional to-do apps, Daystack explicitly separates your <b>Daily Habits</b> from your <b>One-off Targets</b> to prevent visual overwhelm.
+      </p>
+      <p style="font-size: 15px; margin-bottom: 24px; line-height: 1.6;">
+        Every midnight, it automatically wipes your completed targets while preserving your habits, giving you a fresh psychological slate every morning.
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button class="settings-btn" onclick="skipTour()" style="flex: 1; border-radius: 8px;">Skip Tour</button>
+        <button class="onboard-btn" onclick="startTour()" style="flex: 1; margin: 0;">Start Interactive Tour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Philosophy Modal -->
+  <div id="philosophy-overlay" class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <span><span class="zen-element">🧠</span> The Psychology of Daystack</span>
+          <button onclick="document.getElementById('philosophy-overlay').classList.remove('show')" style="background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; padding: 0 4px; opacity: 0.5;">&times;</button>
+        </h2>
+      </div>
+      <div class="modal-body" style="padding: 24px; text-align: left; overflow-y: auto; max-height: 70vh;">
+        <h3 style="margin-bottom: 12px; font-weight: 700; color: var(--pri-blue);">Why Daystack Exists</h3>
+        <p style="font-size: 14px; line-height: 1.6; margin-bottom: 24px; opacity: 0.9;">
+          Traditional to-do apps suffer from a fatal flaw: they mix long-term aspirations, daily repetitive habits, and unique one-off tasks into a single endless list. This causes <strong>visual overwhelm</strong> and the dreaded "to-do list fatigue". Daystack was built to solve this.
+        </p>
+        
+        <h3 style="margin-bottom: 12px; font-weight: 700; color: var(--pri-green);">Habits vs. Targets</h3>
+        <p style="font-size: 14px; line-height: 1.6; margin-bottom: 24px; opacity: 0.9;">
+          Daystack enforces a strict psychological separation:<br><br>
+          <strong>1. Daily Habits (🌿):</strong> Things you do every day (e.g., "Read 10 pages"). They form your foundational pool. You complete them, and they automatically reset at midnight.<br><br>
+          <strong>2. One-off Targets (🎯):</strong> Temporary tasks unique to today (e.g., "Email Sarah"). Once done, they disappear forever at midnight.
+        </p>
+
+        <h3 style="margin-bottom: 12px; font-weight: 700; color: var(--pri-yellow);">The Midnight Reset</h3>
+        <p style="font-size: 14px; line-height: 1.6; margin-bottom: 24px; opacity: 0.9;">
+          Every day at midnight, Daystack automatically wipes your completed targets and resets your habits. You wake up to a fresh, clean slate. This daily reset prevents the guilt of "carrying over" endless lists from the previous day.
+        </p>
+
+        <h3 style="margin-bottom: 12px; font-weight: 700; color: var(--pri-red);">Focus Hierarchy & Priority</h3>
+        <p style="font-size: 14px; line-height: 1.6; margin-bottom: 24px; opacity: 0.9;">
+          Organize your tasks to clear mental clutter by utilizing the <strong>Priority System</strong>. Click the priority circle next to any task to assign it a High (red), Medium (yellow), or Low (blue) priority. Use the top filter bar to instantly sort and filter your lists, allowing you to focus exclusively on what matters most right now.
+        </p>
+
+        <h3 style="margin-bottom: 12px; font-weight: 700; color: var(--text);">Radical Minimalism</h3>
+        <p style="font-size: 14px; line-height: 1.6; margin-bottom: 0; opacity: 0.9;">
+          To help you maintain radical focus, the app operates entirely offline. It uses a single-file architecture to ensure zero latency, zero cloud bloat, and total privacy. The UI is intentionally glassmorphic and calming, featuring a "Zen Breath" effect to reduce anxiety.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -2549,7 +2606,7 @@
       <div class="modal-header">
         <h2 style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
           <span><span class="zen-element">🧘</span> Settings</span>
-          <button id="btn-clear-all" title="Clear all data" style="background: none; border: none; color: var(--text); opacity: 0.05; font-size: 14px; cursor: pointer; padding: 0 4px;">×</button>
+          <button id="btn-clear-all" title="Danger: Erase all tasks and data" style="background: rgba(255, 59, 48, 0.15); color: #ff3b30; border: 1px solid rgba(255, 59, 48, 0.3); border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255, 59, 48, 0.25)'; this.style.transform='scale(1.02)';" onmouseout="this.style.background='rgba(255, 59, 48, 0.15)'; this.style.transform='scale(1)';"><span style="font-size: 14px;">🧹</span> Clear Data</button>
         </h2>
       </div>
 
@@ -3975,8 +4032,8 @@
           const groupTasks = groups[pid] || [];
           if (selectedProjectId !== 'all' && selectedProjectId !== pid) return;
 
-          // Show General group even if empty IF it's a new user or specifically selected
-          const shouldShowEmptyGeneral = (pid === 'none') && (isNewUser || selectedProjectId === 'none');
+          // Always show the General group even if empty so users can always add tasks
+          const shouldShowEmptyGeneral = (pid === 'none');
           if (selectedProjectId === 'all' && groupTasks.length === 0 && !shouldShowEmptyGeneral) return;
 
           hasTasks = true;
@@ -4074,8 +4131,8 @@
         const groupTasks = groups[pid] || [];
         if (selectedProjectId !== 'all' && selectedProjectId !== pid) return;
 
-        // Show General group even if empty IF it's a new user or specifically selected
-        const shouldShowEmptyGeneral = (pid === 'none') && (isNewUser || selectedProjectId === 'none');
+        // Always show the General group even if empty so users can always add tasks
+        const shouldShowEmptyGeneral = (pid === 'none');
         if (selectedProjectId === 'all' && groupTasks.length === 0 && !shouldShowEmptyGeneral) return;
 
         let project = state.projects.find(p => p.id === pid);
@@ -4208,6 +4265,7 @@
       t._struck = !t._struck;
       save(state);
       renderAll();
+      if (currentTourStep === 3) setTimeout(() => showTourStep(4), 300);
     }
 
     function markDone(taskId) {
@@ -4218,6 +4276,7 @@
       playZenChime('task');
       save(state);
       renderAll();
+      if (currentTourStep === 5) setTimeout(() => showTourStep(6), 300);
     }
 
     let lastDeletedTask = null;
@@ -4327,6 +4386,7 @@
       t.source = t.source === 'daily' ? 'oneoff' : 'daily';
       save(state);
       renderAll();
+      if (currentTourStep === 2) setTimeout(() => showTourStep(3), 300);
     }
 
     function addGroup() {
@@ -4448,6 +4508,8 @@
       input.value = '';
       save(state);
       renderAll();
+
+      if (currentTourStep === 1) setTimeout(() => showTourStep(2), 300);
 
       // Attempt to re-focus the specific group input after re-render
       setTimeout(() => {
@@ -5051,6 +5113,7 @@
         btn.classList.add('active');
         document.querySelectorAll('.column').forEach(c => c.classList.remove('active'));
         document.getElementById('col-' + view).classList.add('active');
+        if (currentTourStep === 4 && view === 'progress') setTimeout(() => showTourStep(5), 300);
       });
     });
 
@@ -5319,14 +5382,23 @@
         state.tasks = [];
         state.projects = [];
         state.goals = [];
+        localStorage.removeItem('daystack_onboarded');
         save(state);
         renderAll();
+        toggleSettings();
+        checkOnboarding();
       }
     });
 
     document.getElementById('settings-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'settings-overlay') {
         toggleSettings();
+      }
+    });
+
+    document.getElementById('philosophy-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'philosophy-overlay') {
+        e.target.classList.remove('show');
       }
     });
 
@@ -5840,6 +5912,13 @@
       }
     }
 
+    function skipTour() {
+      document.getElementById('onboard-overlay').classList.remove('show');
+      localStorage.setItem('daystack_onboarded', 'true');
+      currentTourStep = 0;
+      removeTourHints();
+    }
+
     function startTour() {
       document.getElementById('onboard-overlay').classList.remove('show');
       localStorage.setItem('daystack_onboarded', 'true');
@@ -5851,19 +5930,59 @@
       currentTourStep = step;
 
       if (step === 1) {
-        const target = document.querySelector('.column.active .group-header');
-        if (target) {
-          createTourHint(target, 'Tasks are organized in Groups. "General" is your default home.', 'bottom');
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          setTimeout(() => showTourStep(2), 3000);
-        }
-      } else if (step === 2) {
         const target = document.querySelector('.column.active .add-input');
         if (target) {
           target.classList.add('highlight-target');
-          createTourHint(target, 'Type your first task here and press Enter!', 'top');
+          createTourHint(target, 'Step 1/4: Add your first task! Type it here and press Enter.', 'top');
           target.focus();
         }
+      } else if (step === 2) {
+        const target = document.querySelector('.column.active .recur-icon');
+        if (target) {
+          target.classList.add('highlight-target');
+          createTourHint(target, 'Step 2/4: Click this icon to make it a Daily Habit (green). Daily Habits reset at midnight!', 'bottom');
+        } else {
+          showTourStep(1);
+        }
+      } else if (step === 3) {
+        const target = document.querySelector('.column.active .task-title');
+        if (target) {
+          target.classList.add('highlight-target');
+          createTourHint(target, 'Step 3/4: Click the task text to mark it In Progress.', 'bottom');
+        }
+      } else if (step === 4) {
+        const target = document.querySelector('.tab[data-view="progress"]');
+        if (target) {
+          target.classList.add('highlight-target');
+          createTourHint(target, 'Step 4/5: The task is now In Progress. Switch to the In Progress tab!', 'bottom');
+        }
+      } else if (step === 5) {
+        const target = document.querySelector('.column.active .task-title');
+        if (target) {
+          target.classList.add('highlight-target');
+          createTourHint(target, 'Step 5/5: Click the task text one last time to mark it Done!', 'bottom');
+        } else {
+          showTourStep(6);
+        }
+      } else if (step === 6) {
+        currentTourStep = 0;
+        document.getElementById('onboard-card').innerHTML = `
+          <div style="font-size: 40px; margin-bottom: 16px; text-align: center;">🎉</div>
+          <h2 style="text-align: center;">You're all set!</h2>
+          <p style="font-size: 15px; margin-bottom: 16px; line-height: 1.6; text-align: left;">
+            <strong>Pro Tips:</strong> Hover over any button to see a helpful tooltip. Click the circle next to any task to set its priority, and use the top filter bar to organize your focus!
+          </p>
+          <p style="font-size: 15px; margin-bottom: 16px; line-height: 1.6; text-align: left;">
+            Open Settings anytime to <strong>Install the App (PWA)</strong> on your device or <strong>Sync to Cloud</strong>.
+          </p>
+          <p style="font-size: 13px; margin-bottom: 24px; line-height: 1.6; text-align: center; opacity: 0.7;">
+            (You can trigger this tour again anytime by clearing your data in Settings)
+          </p>
+          <div style="display: flex; justify-content: center;">
+            <button class="onboard-btn" onclick="document.getElementById('onboard-overlay').classList.remove('show'); document.querySelector('.tab[data-view=\\'today\\']').click();">Start Using Daystack</button>
+          </div>
+        `;
+        document.getElementById('onboard-overlay').classList.add('show');
       }
     }
 
@@ -5889,13 +6008,7 @@
         hint.classList.add('hint-top');
       }
 
-      // Remove hint when user interacts with target
-      target.addEventListener('input', () => {
-        if (currentTourStep === 2) {
-          removeTourHints();
-          target.classList.remove('highlight-target');
-        }
-      }, { once: true });
+      // Hint waits for the state machine to advance it.
     }
 
     function removeTourHints() {
