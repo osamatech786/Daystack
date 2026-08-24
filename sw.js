@@ -11,12 +11,14 @@
  * minimalist philosophy, this physical sw.js file is required in the root directory.
  */
 
-const CACHE_NAME = 'daystack-v1';
+const CACHE_NAME = 'daystack-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './icon.svg'
+  './icon.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
