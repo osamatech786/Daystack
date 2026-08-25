@@ -1413,6 +1413,7 @@
       display: flex;
       justify-content: center;
       gap: 20px;
+      flex-wrap: wrap;
     }
 
     .footer-link {
@@ -2421,8 +2422,7 @@
           </div>
           <button class="file-btn" id="btn-import" title="Import tasks from a JSON backup file">Load</button>
           <input type="file" id="file-import" accept=".json" style="display:none">
-          <button class="file-btn" id="btn-markdown" title="Copy Today's Summary as Markdown">Copy Today</button>
-          <button class="file-btn" id="btn-shortcuts" title="Keyboard Shortcuts (?)">⌨</button>
+          <button class="file-btn" id="btn-markdown" title="Copy as Markdown">Copy</button>
           <button class="file-btn" id="btn-bulk-select" title="Multi-Select">☑</button>
           <button class="file-btn" id="btn-theme" title="Toggle theme">☀</button>
           <button class="file-btn" id="btn-settings" title="Open Settings">⚙</button>
@@ -2517,6 +2517,10 @@
           <a href="#" class="footer-link" onclick="document.getElementById('philosophy-overlay').classList.add('show'); event.preventDefault();" title="Philosophy">
             <svg viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm1 18h-2v-6h2v6zm-1-9.75c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
             Philosophy
+          </a>
+          <a href="#" id="btn-shortcuts" class="footer-link" title="Keyboard Shortcuts (?)">
+            <svg viewBox="0 0 24 24"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></svg>
+            Shortcuts
           </a>
           <a href="https://github.com/osamatech786/daystack" target="_blank" class="footer-link" title="GitHub">
             <svg viewBox="0 0 24 24">
@@ -2900,7 +2904,10 @@
   <div id="shortcuts-overlay" class="modal-overlay">
     <div class="modal-card" style="max-width: 480px;">
       <div class="modal-header">
-        <h2><span>⌨️ Keyboard Shortcuts</span></h2>
+        <h2 style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <span>⌨️ Keyboard Shortcuts <span style="font-size: 13px; font-weight: normal; opacity: 0.6; margin-left: 4px;">(Desktop)</span></span>
+          <button onclick="toggleShortcuts()" style="background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; padding: 0 4px; opacity: 0.5;" title="Close modal">&times;</button>
+        </h2>
       </div>
       <div class="modal-body" style="padding: 16px 20px;">
         <div class="shortcuts-grid">
@@ -5307,7 +5314,13 @@
       document.getElementById('cloud-settings-fields').style.display = e.target.checked ? 'block' : 'none';
     });
 
-    document.getElementById('btn-shortcuts').addEventListener('click', toggleShortcuts);
+    const btnShortcuts = document.getElementById('btn-shortcuts');
+    if (btnShortcuts) {
+      btnShortcuts.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleShortcuts();
+      });
+    }
     document.getElementById('btn-markdown').addEventListener('click', copyTodayAsMarkdown);
     document.getElementById('shortcuts-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'shortcuts-overlay') {
